@@ -6,12 +6,16 @@
 <title>DGX - Gestão NR13</title>
 
 <style>
-body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f6f9; margin:0; }
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+}
 
 .header {
     background:white;
-    padding:18px 40px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    padding:20px 40px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
 }
 
 .header h1 {
@@ -37,6 +41,10 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f6f9; margin:0;
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
+}
+
+.top-left h2 {
+    margin-top:0;
 }
 
 .top-left p {
@@ -67,8 +75,13 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f6f9; margin:0;
     margin-bottom:15px;
 }
 
-.next-inspection {
-    font-size:20px;
+.next-inspection-label {
+    font-size:14px;
+    color:#666;
+}
+
+.next-inspection-date {
+    font-size:22px;
     font-weight:600;
     color:#333;
 }
@@ -103,11 +116,6 @@ th {
     text-align:left;
     font-weight:600;
 }
-
-.section-title {
-    margin-top:0;
-    font-weight:600;
-}
 </style>
 </head>
 
@@ -132,6 +140,7 @@ fetch(csvUrl)
 .then(data => {
 
     const linhas = data.split("\n").map(l => l.replace(/\r/g, ""));
+
     const dados = linhas.map(l => {
         const resultado = [];
         let atual = "";
@@ -210,15 +219,14 @@ fetch(csvUrl)
 
             <div class="top-right">
                 <div class="${statusClass}">${statusTexto}</div>
-                <div class="next-inspection">
-                    Próxima inspeção:<br>${equipamento[8]}
-                </div>
+                <div class="next-inspection-label">Próxima inspeção</div>
+                <div class="next-inspection-date">${equipamento[8]}</div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <h3 class="section-title">RELATÓRIOS</h3>
+        <h3>RELATÓRIOS</h3>
         <table>
             <tr>
                 <th>Tipo</th>
