@@ -6,16 +6,15 @@
 <title>DGX | Gestão NR-13</title>
 
 <style>
-
-body {
+body{
     margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    background-color:#f4f6f9;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f6f9;
 }
 
 /* HEADER */
 header{
-    background-color:#ffffff;
+    background:#ffffff;
     padding:15px 40px;
     display:flex;
     align-items:center;
@@ -39,12 +38,12 @@ header h2{
     font-weight:600;
 }
 
-.logout-btn{
+.header-buttons{
     display:flex;
-    align-items:center;
-    gap:8px;
-    background:#dc3545;
-    color:white;
+    gap:10px;
+}
+
+.btn{
     border:none;
     padding:8px 16px;
     border-radius:8px;
@@ -53,7 +52,21 @@ header h2{
     font-size:14px;
 }
 
-.logout-btn:hover{
+.btn-print{
+    background:#1f3c88;
+    color:white;
+}
+
+.btn-print:hover{
+    background:#162d66;
+}
+
+.btn-exit{
+    background:#dc3545;
+    color:white;
+}
+
+.btn-exit:hover{
     background:#b02a37;
 }
 
@@ -121,6 +134,12 @@ header h2{
     color:#333;
 }
 
+.data-geracao{
+    margin-top:20px;
+    font-size:12px;
+    color:#666;
+}
+
 /* TABELA */
 table{
     width:100%;
@@ -139,66 +158,93 @@ td{
     border-bottom:1px solid #eee;
 }
 
-/* BOTÃO */
 .button{
     background:#1f3c88;
     color:white;
-    padding:8px 14px;
+    padding:6px 12px;
     border-radius:6px;
     text-decoration:none;
-    font-size:14px;
+    font-size:13px;
 }
 
 .button:hover{
     background:#162d66;
 }
 
+/* OCULTAR BOTÕES NA IMPRESSÃO */
+@media print{
+    header{
+        display:none;
+    }
+}
 </style>
 </head>
+
 <body>
 
 <header>
-
     <div class="header-left">
         <img src="DGX - ENGENHARIA.png" alt="DGX Engenharia Industrial">
         <h2>DGX | Engenharia Industrial</h2>
     </div>
 
-    <button class="logout-btn" onclick="window.location.href=window.location.pathname">
-        <!-- ÍCONE SVG -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
-            <path d="M6 2a2 2 0 0 0-2 2v2h1V4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2H4v2a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6z"/>
-            <path d="M.146 8.354a.5.5 0 0 1 0-.708L3.793 4H9.5a.5.5 0 0 1 0 1H3.793l-3.647 3.646a.5.5 0 0 1-.708 0z"/>
-        </svg>
-        Sair
-    </button>
-
+    <div class="header-buttons">
+        <button class="btn btn-print" onclick="window.print()">📄 Gerar PDF</button>
+        <button class="btn btn-exit" onclick="history.back()">🚪 Sair</button>
+    </div>
 </header>
 
 <div class="container">
+<div id="conteudo"></div>
+</div>
 
-    <!-- EQUIPAMENTO -->
+<script>
+
+/* ====== DATA DE GERAÇÃO ====== */
+const agora = new Date();
+const dataGeracao = agora.toLocaleDateString('pt-BR') + 
+                    " - " + 
+                    agora.toLocaleTimeString('pt-BR');
+
+/* ====== DADOS FIXOS (PODEM VOLTAR A SER DINÂMICOS) ====== */
+const equipamento = {
+    tag: "MA01-513M0053",
+    categoria: "III",
+    pmta: "6,0",
+    fluido: "Metanol / Água",
+    status: "DENTRO DO PRAZO",
+    proxima: "28/01/2032",
+    dataInspecao: "28/01/2026"
+};
+
+const statusClass = equipamento.status === "DENTRO DO PRAZO" ? "ok" : "vencida";
+
+/* ====== RENDERIZAÇÃO ====== */
+
+document.getElementById("conteudo").innerHTML = `
     <div class="card equipamento">
-        
         <div class="equip-left">
-            <h1>Equipamento: MA01-513M0053</h1>
-            <p><strong>Categoria NR-13:</strong> III</p>
-            <p><strong>PMTA:</strong> 6,0 bar</p>
-            <p><strong>Fluido:</strong> Metanol / Água</p>
+            <h1>Equipamento: ${equipamento.tag}</h1>
+            <p><strong>Categoria NR-13:</strong> ${equipamento.categoria}</p>
+            <p><strong>PMTA:</strong> ${equipamento.pmta} bar</p>
+            <p><strong>Fluido:</strong> ${equipamento.fluido}</p>
         </div>
 
         <div class="equip-right">
-            <div class="status ok">DENTRO DO PRAZO</div>
+            <div class="status ${statusClass}">
+                ${equipamento.status}
+            </div>
             <div class="proxima">Próxima inspeção</div>
-            <div class="data-proxima">28/01/2032</div>
+            <div class="data-proxima">${equipamento.proxima}</div>
         </div>
 
+        <div class="data-geracao">
+            Data de geração: ${dataGeracao}
+        </div>
     </div>
 
-    <!-- RELATÓRIOS -->
     <div class="card">
         <h3>RELATÓRIOS</h3>
-
         <table>
             <tr>
                 <th>Tipo</th>
@@ -207,25 +253,24 @@ td{
             </tr>
             <tr>
                 <td>Inspeção Visual Externa</td>
-                <td>28/01/2026</td>
+                <td>${equipamento.dataInspecao}</td>
                 <td><a href="#" class="button">Baixar PDF</a></td>
             </tr>
         </table>
     </div>
 
-    <!-- ART -->
     <div class="card">
         <h3>ART</h3>
         <p>Não disponível</p>
     </div>
 
-    <!-- PRONTUÁRIO -->
     <div class="card">
         <h3>PRONTUÁRIO NR-13</h3>
         <p>Não disponível</p>
     </div>
+`;
 
-</div>
+</script>
 
 </body>
 </html>
