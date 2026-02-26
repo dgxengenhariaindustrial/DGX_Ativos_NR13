@@ -6,19 +6,108 @@
 <title>DGX - Gestão NR13</title>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; }
-.header { background:white; padding:15px 40px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-.header h1 { color:#0b3c5d; margin:0; }
-.container { max-width:1100px; margin:40px auto; }
-.card { background:white; padding:25px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-bottom:25px; }
-.status-ok { background:#d4edda; color:#155724; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
-.status-bad { background:#f8d7da; color:#721c24; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
-.button { background:#1f5fa8; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; display:inline-block; }
-.button:hover { background:#15447a; }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th, td { padding:12px; border-bottom:1px solid #ddd; }
-th { background:#f0f2f5; text-align:left; }
-.section-title { margin-top:0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f6f9; margin:0; }
+
+.header {
+    background:white;
+    padding:18px 40px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.header h1 {
+    color:#0b3c5d;
+    margin:0;
+    font-weight:600;
+}
+
+.container {
+    max-width:1100px;
+    margin:40px auto;
+}
+
+.card {
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    margin-bottom:30px;
+}
+
+.top-grid {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+
+.top-left p {
+    margin:8px 0;
+}
+
+.top-right {
+    text-align:right;
+}
+
+.status-ok {
+    background:#d4edda;
+    color:#155724;
+    padding:10px 18px;
+    border-radius:8px;
+    font-weight:600;
+    display:inline-block;
+    margin-bottom:15px;
+}
+
+.status-bad {
+    background:#f8d7da;
+    color:#721c24;
+    padding:10px 18px;
+    border-radius:8px;
+    font-weight:600;
+    display:inline-block;
+    margin-bottom:15px;
+}
+
+.next-inspection {
+    font-size:20px;
+    font-weight:600;
+    color:#333;
+}
+
+.button {
+    background:#1f5fa8;
+    color:white;
+    padding:8px 15px;
+    border-radius:6px;
+    text-decoration:none;
+    font-size:14px;
+    display:inline-block;
+}
+
+.button:hover {
+    background:#15447a;
+}
+
+table {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th, td {
+    padding:14px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+th {
+    background:#f0f2f5;
+    text-align:left;
+    font-weight:600;
+}
+
+.section-title {
+    margin-top:0;
+    font-weight:600;
+}
 </style>
 </head>
 
@@ -111,12 +200,21 @@ fetch(csvUrl)
 
     document.getElementById("conteudo").innerHTML = `
     <div class="card">
-        <h2>Equipamento: ${equipamento[0]}</h2>
-        <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
-        <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
-        <p><strong>Fluido:</strong> ${equipamento[5]}</p>
-        <p><span class="${statusClass}">${statusTexto}</span></p>
-        <p><strong>Próxima inspeção:</strong> ${equipamento[8]}</p>
+        <div class="top-grid">
+            <div class="top-left">
+                <h2>Equipamento: ${equipamento[0]}</h2>
+                <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
+                <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
+                <p><strong>Fluido:</strong> ${equipamento[5]}</p>
+            </div>
+
+            <div class="top-right">
+                <div class="${statusClass}">${statusTexto}</div>
+                <div class="next-inspection">
+                    Próxima inspeção:<br>${equipamento[8]}
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card">
