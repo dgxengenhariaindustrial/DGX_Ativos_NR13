@@ -13,11 +13,6 @@ body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; }
 .card { background:white; padding:25px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-bottom:25px; }
 .status-ok { background:#d4edda; color:#155724; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
 .status-bad { background:#f8d7da; color:#721c24; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
-.button { background:#1f5fa8; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; }
-.button:hover { background:#15447a; }
-table { width:100%; border-collapse:collapse; }
-th, td { padding:12px; border-bottom:1px solid #ddd; }
-th { background:#f0f2f5; text-align:left; }
 </style>
 </head>
 
@@ -28,9 +23,7 @@ th { background:#f0f2f5; text-align:left; }
 </div>
 
 <div class="container">
-
 <div id="equipamento"></div>
-
 </div>
 
 <script>
@@ -42,20 +35,40 @@ const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIu
 fetch(csvUrl)
 .then(response => response.text())
 .then(data => {
-    const linhas = data.split("\n");
-    const dados = linhas.map(l => l.split(";"));
-    
-    const cabecalho = dados[0];
+
+    const linhas = data.split("\n").map(l => l.replace(/\r/g, ""));
+
+    const dados = linhas.map(l => {
+        const resultado = [];
+        let atual = "";
+        let dentroAspas = false;
+
+        for (let char of l) {
+            if (char === '"') {
+                dentroAspas = !dentroAspas;
+            } else if (char === ',' && !dentroAspas) {
+                resultado.push(atual);
+                atual = "";
+            } else {
+                atual += char;
+            }
+        }
+        resultado.push(atual);
+        return resultado;
+    });
+
     const registros = dados.slice(1);
 
     const equipamento = registros.find(r => r[0] === tag);
 
     if (!equipamento) {
-        document.getElementById("equipamento").innerHTML = "<div class='card'><h2>Equipamento não encontrado</h2></div>";
+        document.getElementById("equipamento").innerHTML =
+        "<div class='card'><h2>Equipamento não encontrado</h2></div>";
         return;
     }
 
-    const statusClass = equipamento[9] === "DENTRO DO PRAZO" ? "status-ok" : "status-bad";
+    const statusTexto = equipamento[9];
+    const statusClass = statusTexto === "DENTRO DO PRAZO" ? "status-ok" : "status-bad";
 
     document.getElementById("equipamento").innerHTML = `
     <div class="card">
@@ -63,7 +76,7 @@ fetch(csvUrl)
         <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
         <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
         <p><strong>Fluido:</strong> ${equipamento[5]}</p>
-        <p><span class="${statusClass}">${equipamento[9]}</span></p>
+        <p><span class="${statusClass}">${statusTexto}</span></p>
         <p><strong>Próxima inspeção:</strong> ${equipamento[8]}</p>
     </div>
     `;
