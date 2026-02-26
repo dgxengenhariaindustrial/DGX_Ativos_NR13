@@ -5,38 +5,38 @@
 <title>DGX | Engenharia Industrial</title>
 
 <style>
-body {
+body{
     margin:0;
-    font-family: Arial, sans-serif;
+    font-family:Arial, sans-serif;
     background:#f2f4f7;
 }
 
-header {
+header{
     background:white;
     padding:15px 40px;
     display:flex;
-    align-items:center;
     justify-content:space-between;
+    align-items:center;
     box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.logo-area {
+.logo-area{
     display:flex;
     align-items:center;
     gap:15px;
 }
 
-.logo-area img {
+.logo-area img{
     height:45px;
 }
 
-.logo-area h1 {
+.logo-area h1{
+    margin:0;
     font-size:22px;
     color:#1f3c88;
-    margin:0;
 }
 
-.top-buttons button {
+.top-buttons button{
     padding:8px 15px;
     border:none;
     border-radius:6px;
@@ -45,22 +45,22 @@ header {
     margin-left:10px;
 }
 
-.btn-pdf {
+.btn-pdf{
     background:#1f3c88;
     color:white;
 }
 
-.btn-sair {
+.btn-sair{
     background:#d32f2f;
     color:white;
 }
 
-.container {
+.container{
     width:80%;
     margin:40px auto;
 }
 
-.card {
+.card{
     background:white;
     padding:25px;
     border-radius:10px;
@@ -68,17 +68,17 @@ header {
     box-shadow:0 4px 10px rgba(0,0,0,0.05);
 }
 
-.card-flex {
+.card-flex{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
 }
 
-.status-box {
+.status-box{
     text-align:right;
 }
 
-.status {
+.status{
     padding:8px 15px;
     border-radius:6px;
     font-weight:bold;
@@ -86,34 +86,34 @@ header {
     margin-bottom:10px;
 }
 
-.status.ok {
+.status.ok{
     background:#c8e6c9;
     color:#256029;
 }
 
-.status.vencido {
+.status.vencido{
     background:#ffcdd2;
     color:#c62828;
 }
 
-.relatorio-table {
+.relatorio-table{
     width:100%;
     border-collapse:collapse;
     margin-top:15px;
 }
 
-.relatorio-table th {
+.relatorio-table th{
     background:#e0e0e0;
     padding:10px;
     text-align:left;
 }
 
-.relatorio-table td {
+.relatorio-table td{
     padding:10px;
     border-bottom:1px solid #ddd;
 }
 
-.button {
+.button{
     background:#1f3c88;
     color:white;
     padding:6px 12px;
@@ -122,7 +122,7 @@ header {
     font-size:14px;
 }
 
-footer {
+footer{
     text-align:center;
     padding:15px;
     font-size:13px;
@@ -191,10 +191,11 @@ footer {
 </div>
 
 <footer>
-    Documento gerado automaticamente em <span id="dataGeracao"></span>
+Documento gerado automaticamente em <span id="dataGeracao"></span>
 </footer>
 
 <script>
+
 const urlParams = new URLSearchParams(window.location.search);
 const tag = urlParams.get('tag');
 
@@ -205,56 +206,61 @@ fetch(sheetURL)
 .then(data => {
 
     const linhas = data.split("\n").map(l => l.split(","));
+    const cabecalho = linhas[0];
     const registros = linhas.slice(1);
 
-    const equipamento = registros.find(r => r[0] === tag);
+    const getIndex = (nome) => cabecalho.indexOf(nome);
+
+    const equipamento = registros.find(r => r[getIndex("TAG EQUIPAMENTO")] === tag);
     if (!equipamento) return;
 
-    document.getElementById("equipamento").innerText = "Equipamento: " + equipamento[0];
-    document.getElementById("categoria").innerText = equipamento[1];
-    document.getElementById("pmta").innerText = equipamento[2] + " bar";
-    document.getElementById("fluido").innerText = equipamento[3];
-    document.getElementById("proxima").innerText = equipamento[8];
+    document.getElementById("equipamento").innerText = "Equipamento: " + equipamento[getIndex("TAG EQUIPAMENTO")];
+    document.getElementById("categoria").innerText = equipamento[getIndex("CATEGORIA NR-13")];
+    document.getElementById("pmta").innerText = equipamento[getIndex("PMTA (bar)")] + " bar";
+    document.getElementById("fluido").innerText = equipamento[getIndex("FLUIDO")];
+    document.getElementById("proxima").innerText = equipamento[getIndex("PRÓXIMA INSPEÇÃO")];
 
+    const statusTexto = equipamento[getIndex("STATUS")];
     const status = document.getElementById("status");
-    status.innerText = equipamento[9];
-    status.classList.add(equipamento[9] === "DENTRO DO PRAZO" ? "ok" : "vencido");
+    status.innerText = statusTexto;
+    status.classList.add(statusTexto === "DENTRO DO PRAZO" ? "ok" : "vencido");
 
-    const relatoriosTipos = [
-        {nome:"Inspeção Visual Externa", index:10, dataIndex:14},
-        {nome:"Inspeção Visual Interna", index:11, dataIndex:15},
-        {nome:"Medição de Espessura", index:12, dataIndex:16},
-        {nome:"Teste Hidrostático", index:13, dataIndex:17}
+    const relatorios = [
+        {nome:"Inspeção Visual Externa", coluna:"LINK - VISUAL EXTERNA"},
+        {nome:"Inspeção Visual Interna", coluna:"LINK - VISUAL INTERNA"},
+        {nome:"Medição de Espessura", coluna:"LINK - MEDIÇÃO DE ESPESSURA"},
+        {nome:"Teste Hidrostático", coluna:"LINK - TESTE HIDROSTÁTICO"}
     ];
 
     const tabela = document.getElementById("relatorios");
+    tabela.innerHTML = "";
 
-    relatoriosTipos.forEach(tipo => {
-        if (equipamento[tipo.index]) {
+    relatorios.forEach(r => {
+        const index = getIndex(r.coluna);
+        if (equipamento[index]) {
             tabela.innerHTML += `
                 <tr>
-                    <td>${tipo.nome}</td>
-                    <td>${equipamento[tipo.dataIndex] || "-"}</td>
-                    <td><a class="button" href="${equipamento[tipo.index]}" target="_blank">Visualizar</a></td>
+                    <td>${r.nome}</td>
+                    <td>-</td>
+                    <td><a class="button" href="${equipamento[index]}" target="_blank">Visualizar</a></td>
                 </tr>
             `;
         }
     });
 
+    const artLink = equipamento[getIndex("LINK - ART")];
     document.getElementById("art").innerHTML =
-        equipamento[18]
-        ? `<a class="button" href="${equipamento[18]}" target="_blank">Visualizar ART</a>`
-        : "Não disponível";
+        artLink ? `<a class="button" href="${artLink}" target="_blank">Visualizar ART</a>` : "Não disponível";
 
+    const prontuarioLink = equipamento[getIndex("LINK - PRONTUÁRIO")];
     document.getElementById("prontuario").innerHTML =
-        equipamento[19]
-        ? `<a class="button" href="${equipamento[19]}" target="_blank">Visualizar Prontuário</a>`
-        : "Não disponível";
+        prontuarioLink ? `<a class="button" href="${prontuarioLink}" target="_blank">Visualizar Prontuário</a>` : "Não disponível";
 
 });
 
 document.getElementById("dataGeracao").innerText =
     new Date().toLocaleString("pt-BR");
+
 </script>
 
 </body>
