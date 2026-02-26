@@ -6,127 +6,69 @@
 <title>DGX - Gestão NR13</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
-    margin: 0;
-}
-
-.header {
-    background: white;
-    padding: 15px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.header h1 {
-    color: #0b3c5d;
-    margin: 0;
-}
-
-.container {
-    max-width: 1000px;
-    margin: 40px auto;
-}
-
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    margin-bottom: 25px;
-}
-
-.status-ok {
-    background: #d4edda;
-    color: #155724;
-    padding: 8px 15px;
-    border-radius: 6px;
-    display: inline-block;
-    font-weight: bold;
-}
-
-.button {
-    background: #1f5fa8;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.button:hover {
-    background: #15447a;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background: #f0f2f5;
-    text-align: left;
-}
+body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; }
+.header { background:white; padding:15px 40px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+.header h1 { color:#0b3c5d; margin:0; }
+.container { max-width:1000px; margin:40px auto; }
+.card { background:white; padding:25px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-bottom:25px; }
+.status-ok { background:#d4edda; color:#155724; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
+.status-bad { background:#f8d7da; color:#721c24; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
+.button { background:#1f5fa8; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; }
+.button:hover { background:#15447a; }
+table { width:100%; border-collapse:collapse; }
+th, td { padding:12px; border-bottom:1px solid #ddd; }
+th { background:#f0f2f5; text-align:left; }
 </style>
 </head>
 
 <body>
 
 <div class="header">
-    <h1>DGX | Engenharia Industrial</h1>
+<h1>DGX | Engenharia Industrial</h1>
 </div>
 
 <div class="container">
 
-<div class="card">
-    <h2>Equipamento: MA01-513M0053</h2>
-    <p><strong>Categoria NR-13:</strong> III</p>
-    <p><strong>PMTA:</strong> 6 bar</p>
-    <p><strong>Fluido:</strong> Metanol / Água</p>
-    <p><span class="status-ok">DENTRO DO PRAZO</span></p>
-    <p><strong>Próxima inspeção:</strong> 28/01/2032</p>
-</div>
-
-<div class="card">
-    <h3>RELATÓRIOS</h3>
-    <table>
-        <tr>
-            <th>Tipo</th>
-            <th>Data</th>
-            <th>Download</th>
-        </tr>
-        <tr>
-            <td>Inspeção Visual Externa</td>
-            <td>28/01/2026</td>
-            <td><a class="button" href="#">Baixar PDF</a></td>
-        </tr>
-        <tr>
-            <td>Inspeção Visual Interna</td>
-            <td>28/01/2026</td>
-            <td><a class="button" href="#">Baixar PDF</a></td>
-        </tr>
-    </table>
-</div>
-
-<div class="card">
-    <h3>ART</h3>
-    <a class="button" href="#">Baixar ART</a>
-</div>
-
-<div class="card">
-    <h3>PRONTUÁRIO NR-13</h3>
-    <a class="button" href="#">Baixar Prontuário</a>
-</div>
+<div id="equipamento"></div>
 
 </div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const tag = urlParams.get('tag');
+
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+
+fetch(csvUrl)
+.then(response => response.text())
+.then(data => {
+    const linhas = data.split("\n");
+    const dados = linhas.map(l => l.split(","));
+    
+    const cabecalho = dados[0];
+    const registros = dados.slice(1);
+
+    const equipamento = registros.find(r => r[0] === tag);
+
+    if (!equipamento) {
+        document.getElementById("equipamento").innerHTML = "<div class='card'><h2>Equipamento não encontrado</h2></div>";
+        return;
+    }
+
+    const statusClass = equipamento[9] === "DENTRO DO PRAZO" ? "status-ok" : "status-bad";
+
+    document.getElementById("equipamento").innerHTML = `
+    <div class="card">
+        <h2>Equipamento: ${equipamento[0]}</h2>
+        <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
+        <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
+        <p><strong>Fluido:</strong> ${equipamento[5]}</p>
+        <p><span class="${statusClass}">${equipamento[9]}</span></p>
+        <p><strong>Próxima inspeção:</strong> ${equipamento[8]}</p>
+    </div>
+    `;
+});
+</script>
 
 </body>
 </html>
