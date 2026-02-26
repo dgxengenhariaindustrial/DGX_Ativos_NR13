@@ -4,103 +4,27 @@
 <meta charset="UTF-8">
 <title>DGX | Engenharia Industrial</title>
 
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f2f4f7;
-    margin: 0;
-}
-
-header {
-    background: white;
-    padding: 15px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.logo-area {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.logo-area img {
-    height: 45px;
-}
-
-h1 {
-    color: #1f3c88;
-    font-size: 22px;
-    margin: 0;
-}
-
-.top-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.button {
-    padding: 8px 15px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-}
-
-.btn-blue { background: #1f3c88; }
-.btn-red { background: #d64545; }
-
-.container {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-.status-box {
-    text-align: right;
-}
-
-.status {
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.status.ok { background: #c8e6c9; color: #2e7d32; }
-.status.bad { background: #ffcdd2; color: #c62828; }
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background: #e0e0e0;
-    text-align: left;
-}
-footer {
-    text-align: center;
-    font-size: 12px;
-    margin: 20px;
-    color: #777;
-}
+body { font-family: Arial; background:#f2f4f7; margin:0; }
+header { background:white; padding:15px 40px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 4px rgba(0,0,0,0.05);}
+.logo-area { display:flex; align-items:center; gap:15px;}
+.logo-area img { height:45px;}
+h1 { color:#1f3c88; font-size:22px; margin:0;}
+.top-buttons { display:flex; gap:10px;}
+.button { padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:bold; color:white; cursor:pointer;}
+.btn-blue { background:#1f3c88;}
+.btn-red { background:#d64545;}
+.container { max-width:1100px; margin:40px auto; padding:0 20px;}
+.card { background:white; padding:25px; border-radius:10px; margin-bottom:25px; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
+.status { padding:8px 12px; border-radius:6px; font-weight:bold; display:inline-block;}
+.status.ok { background:#c8e6c9; color:#2e7d32;}
+.status.bad { background:#ffcdd2; color:#c62828;}
+table { width:100%; border-collapse:collapse;}
+th, td { padding:12px; border-bottom:1px solid #ddd;}
+th { background:#e0e0e0; text-align:left;}
+footer { text-align:center; font-size:12px; margin:20px; color:#777;}
 </style>
 </head>
 
@@ -108,44 +32,39 @@ footer {
 
 <header>
 <div class="logo-area">
-    <img src="DGX - ENGENHARIA.png">
-    <h1>DGX | Engenharia Industrial</h1>
+<img src="DGX - ENGENHARIA.png">
+<h1>DGX | Engenharia Industrial</h1>
 </div>
-
 <div class="top-buttons">
-    <a class="button btn-blue" onclick="window.print()">Gerar PDF</a>
-    <a class="button btn-red" onclick="window.close()">Sair</a>
+<a class="button btn-blue" onclick="window.print()">Gerar PDF</a>
+<a class="button btn-red" onclick="window.close()">Sair</a>
 </div>
 </header>
 
 <div class="container">
 
 <div class="card">
-    <div style="display:flex; justify-content:space-between;">
-        <div>
-            <h2 id="tag"></h2>
-            <p><b>Categoria NR-13:</b> <span id="categoria"></span></p>
-            <p><b>PMTA:</b> <span id="pmta"></span></p>
-            <p><b>Fluido:</b> <span id="fluido"></span></p>
-        </div>
-
-        <div class="status-box">
-            <div id="statusBox"></div>
-            <p><b>Próxima inspeção</b><br><span id="proxima"></span></p>
-        </div>
-    </div>
+<div style="display:flex; justify-content:space-between;">
+<div>
+<h2 id="tag"></h2>
+<p><b>Categoria NR-13:</b> <span id="categoria"></span></p>
+<p><b>PMTA:</b> <span id="pmta"></span></p>
+<p><b>Fluido:</b> <span id="fluido"></span></p>
+</div>
+<div style="text-align:right;">
+<div id="statusBox"></div>
+<p><b>Próxima inspeção</b><br><span id="proxima"></span></p>
+</div>
+</div>
 </div>
 
 <div class="card">
 <h3>RELATÓRIOS</h3>
 <table>
 <thead>
-<tr>
-<th>Tipo</th>
-<th>Visualizar</th>
-</tr>
+<tr><th>Tipo</th><th>Visualizar</th></tr>
 </thead>
-<tbody id="tabelaRelatorios"></tbody>
+<tbody id="relatorios"></tbody>
 </table>
 </div>
 
@@ -169,76 +88,74 @@ Página gerada automaticamente em <span id="dataGeracao"></span>
 
 const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
-function normalize(text) {
-    return text.trim().replace(/^"(.*)"$/, "$1").toUpperCase();
+const params = new URLSearchParams(window.location.search);
+const tagURL = params.get("tag");
+
+Papa.parse(csvURL, {
+download: true,
+header: true,
+skipEmptyLines: true,
+complete: function(results) {
+
+const dados = results.data;
+const equipamento = dados.find(e => e["TAG EQUIPAMENTO"] === tagURL);
+
+if(!equipamento) return;
+
+document.getElementById("tag").innerText = "Equipamento: " + tagURL;
+document.getElementById("categoria").innerText = equipamento["CATEGORIA NR-13"];
+document.getElementById("pmta").innerText = equipamento["PMTA (bar)"];
+document.getElementById("fluido").innerText = equipamento["FLUIDO"];
+document.getElementById("proxima").innerText = equipamento["PRÓXIMA INSPEÇÃO"];
+
+const status = equipamento["STATUS"];
+
+if(status === "DENTRO DO PRAZO"){
+document.getElementById("statusBox").innerHTML =
+`<div class="status ok">${status}</div>`;
+} else {
+document.getElementById("statusBox").innerHTML =
+`<div class="status bad">${status}</div>`;
 }
 
-fetch(csvURL)
-.then(response => response.text())
-.then(data => {
+const relatorios = [
+["Inspeção Visual Externa","LINK - VISUAL EXTERNA"],
+["Inspeção Visual Interna","LINK - VISUAL INTERNA"],
+["Medição de Espessura","LINK - MEDIÇÃO DE ESPESSURA"],
+["Teste Hidrostático","LINK - TESTE HIDROSTÁTICO"]
+];
 
-    const linhas = data.split("\n").map(l => l.split(","));
-    const cabecalho = linhas[0].map(c => normalize(c));
+const tabela = document.getElementById("relatorios");
 
-    const getIndex = nome => cabecalho.indexOf(normalize(nome));
+relatorios.forEach(r=>{
+if(equipamento[r[1]]){
+tabela.innerHTML += `
+<tr>
+<td>${r[0]}</td>
+<td><a class="button btn-blue" href="${equipamento[r[1]]}" target="_blank">Visualizar</a></td>
+</tr>`;
+}
+});
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const tag = urlParams.get("tag");
+if(equipamento["LINK - ART"]){
+document.getElementById("art").innerHTML =
+`<a class="button btn-blue" href="${equipamento["LINK - ART"]}" target="_blank">Visualizar ART</a>`;
+}else{
+document.getElementById("art").innerText = "Não disponível";
+}
 
-    const linha = linhas.find((l, i) => i > 0 && l[getIndex("TAG EQUIPAMENTO")] === tag);
+if(equipamento["LINK - PRONTUÁRIO"]){
+document.getElementById("prontuario").innerHTML =
+`<a class="button btn-blue" href="${equipamento["LINK - PRONTUÁRIO"]}" target="_blank">Visualizar Prontuário</a>`;
+}else{
+document.getElementById("prontuario").innerText = "Não disponível";
+}
 
-    if(!linha) return;
-
-    document.getElementById("tag").innerText = "Equipamento: " + tag;
-    document.getElementById("categoria").innerText = linha[getIndex("CATEGORIA NR-13")];
-    document.getElementById("pmta").innerText = linha[getIndex("PMTA (BAR)")];
-    document.getElementById("fluido").innerText = linha[getIndex("FLUIDO")];
-
-    const status = linha[getIndex("STATUS")];
-    const proxima = linha[getIndex("PRÓXIMA INSPEÇÃO")];
-
-    document.getElementById("proxima").innerText = proxima;
-
-    if(status === "DENTRO DO PRAZO"){
-        document.getElementById("statusBox").innerHTML =
-        `<div class="status ok">${status}</div>`;
-    } else {
-        document.getElementById("statusBox").innerHTML =
-        `<div class="status bad">${status}</div>`;
-    }
-
-    const relatorios = [
-        ["Inspeção Visual Externa", "LINK - VISUAL EXTERNA"],
-        ["Inspeção Visual Interna", "LINK - VISUAL INTERNA"],
-        ["Medição de Espessura", "LINK - MEDIÇÃO DE ESPESSURA"],
-        ["Teste Hidrostático", "LINK - TESTE HIDROSTÁTICO"]
-    ];
-
-    const tabela = document.getElementById("tabelaRelatorios");
-
-    relatorios.forEach(r => {
-        const link = linha[getIndex(r[1])];
-        if(link){
-            tabela.innerHTML += `
-            <tr>
-            <td>${r[0]}</td>
-            <td><a class="button btn-blue" href="${link}" target="_blank">Visualizar</a></td>
-            </tr>`;
-        }
-    });
-
-    const artLink = linha[getIndex("LINK - ART")];
-    document.getElementById("art").innerHTML =
-        artLink ? `<a class="button btn-blue" href="${artLink}" target="_blank">Visualizar ART</a>` : "Não disponível";
-
-    const prontuarioLink = linha[getIndex("LINK - PRONTUÁRIO")];
-    document.getElementById("prontuario").innerHTML =
-        prontuarioLink ? `<a class="button btn-blue" href="${prontuarioLink}" target="_blank">Visualizar Prontuário</a>` : "Não disponível";
-
+}
 });
 
 document.getElementById("dataGeracao").innerText =
-    new Date().toLocaleString("pt-BR");
+new Date().toLocaleString("pt-BR");
 
 </script>
 
