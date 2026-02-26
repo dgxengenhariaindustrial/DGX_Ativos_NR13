@@ -9,10 +9,16 @@
 body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; }
 .header { background:white; padding:15px 40px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
 .header h1 { color:#0b3c5d; margin:0; }
-.container { max-width:1000px; margin:40px auto; }
+.container { max-width:1100px; margin:40px auto; }
 .card { background:white; padding:25px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-bottom:25px; }
 .status-ok { background:#d4edda; color:#155724; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
 .status-bad { background:#f8d7da; color:#721c24; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:bold; }
+.button { background:#1f5fa8; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; display:inline-block; }
+.button:hover { background:#15447a; }
+table { width:100%; border-collapse:collapse; margin-top:15px; }
+th, td { padding:12px; border-bottom:1px solid #ddd; }
+th { background:#f0f2f5; text-align:left; }
+.section-title { margin-top:0; }
 </style>
 </head>
 
@@ -23,7 +29,7 @@ body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; }
 </div>
 
 <div class="container">
-<div id="equipamento"></div>
+<div id="conteudo"></div>
 </div>
 
 <script>
@@ -37,7 +43,6 @@ fetch(csvUrl)
 .then(data => {
 
     const linhas = data.split("\n").map(l => l.replace(/\r/g, ""));
-
     const dados = linhas.map(l => {
         const resultado = [];
         let atual = "";
@@ -58,11 +63,10 @@ fetch(csvUrl)
     });
 
     const registros = dados.slice(1);
-
     const equipamento = registros.find(r => r[0] === tag);
 
     if (!equipamento) {
-        document.getElementById("equipamento").innerHTML =
+        document.getElementById("conteudo").innerHTML =
         "<div class='card'><h2>Equipamento não encontrado</h2></div>";
         return;
     }
@@ -70,7 +74,18 @@ fetch(csvUrl)
     const statusTexto = equipamento[9];
     const statusClass = statusTexto === "DENTRO DO PRAZO" ? "status-ok" : "status-bad";
 
-    document.getElementById("equipamento").innerHTML = `
+    let relatoriosHTML = "";
+
+    if (equipamento[10])
+        relatoriosHTML += `<tr><td>Inspeção Visual Externa</td><td>-</td><td><a class="button" href="${equipamento[10]}" target="_blank">Baixar PDF</a></td></tr>`;
+    if (equipamento[11])
+        relatoriosHTML += `<tr><td>Inspeção Visual Interna</td><td>-</td><td><a class="button" href="${equipamento[11]}" target="_blank">Baixar PDF</a></td></tr>`;
+    if (equipamento[12])
+        relatoriosHTML += `<tr><td>Medição de Espessura</td><td>-</td><td><a class="button" href="${equipamento[12]}" target="_blank">Baixar PDF</a></td></tr>`;
+    if (equipamento[13])
+        relatoriosHTML += `<tr><td>Teste Hidrostático</td><td>-</td><td><a class="button" href="${equipamento[13]}" target="_blank">Baixar PDF</a></td></tr>`;
+
+    document.getElementById("conteudo").innerHTML = `
     <div class="card">
         <h2>Equipamento: ${equipamento[0]}</h2>
         <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
@@ -78,6 +93,28 @@ fetch(csvUrl)
         <p><strong>Fluido:</strong> ${equipamento[5]}</p>
         <p><span class="${statusClass}">${statusTexto}</span></p>
         <p><strong>Próxima inspeção:</strong> ${equipamento[8]}</p>
+    </div>
+
+    <div class="card">
+        <h3 class="section-title">RELATÓRIOS</h3>
+        <table>
+            <tr>
+                <th>Tipo</th>
+                <th>Data</th>
+                <th>Download</th>
+            </tr>
+            ${relatoriosHTML}
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>ART</h3>
+        ${equipamento[14] ? `<a class="button" href="${equipamento[14]}" target="_blank">Baixar ART</a>` : "Não disponível"}
+    </div>
+
+    <div class="card">
+        <h3>PRONTUÁRIO NR-13</h3>
+        ${equipamento[15] ? `<a class="button" href="${equipamento[15]}" target="_blank">Baixar Prontuário</a>` : "Não disponível"}
     </div>
     `;
 });
