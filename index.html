@@ -73,17 +73,41 @@ fetch(csvUrl)
 
     const statusTexto = equipamento[9];
     const statusClass = statusTexto === "DENTRO DO PRAZO" ? "status-ok" : "status-bad";
+    const dataInspecao = equipamento[6];
 
     let relatoriosHTML = "";
 
     if (equipamento[10])
-        relatoriosHTML += `<tr><td>Inspeção Visual Externa</td><td>-</td><td><a class="button" href="${equipamento[10]}" target="_blank">Baixar PDF</a></td></tr>`;
+        relatoriosHTML += `
+        <tr>
+            <td>Inspeção Visual Externa</td>
+            <td>${dataInspecao}</td>
+            <td><a class="button" href="${equipamento[10]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
     if (equipamento[11])
-        relatoriosHTML += `<tr><td>Inspeção Visual Interna</td><td>-</td><td><a class="button" href="${equipamento[11]}" target="_blank">Baixar PDF</a></td></tr>`;
+        relatoriosHTML += `
+        <tr>
+            <td>Inspeção Visual Interna</td>
+            <td>${dataInspecao}</td>
+            <td><a class="button" href="${equipamento[11]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
     if (equipamento[12])
-        relatoriosHTML += `<tr><td>Medição de Espessura</td><td>-</td><td><a class="button" href="${equipamento[12]}" target="_blank">Baixar PDF</a></td></tr>`;
+        relatoriosHTML += `
+        <tr>
+            <td>Medição de Espessura</td>
+            <td>${dataInspecao}</td>
+            <td><a class="button" href="${equipamento[12]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
     if (equipamento[13])
-        relatoriosHTML += `<tr><td>Teste Hidrostático</td><td>-</td><td><a class="button" href="${equipamento[13]}" target="_blank">Baixar PDF</a></td></tr>`;
+        relatoriosHTML += `
+        <tr>
+            <td>Teste Hidrostático</td>
+            <td>${dataInspecao}</td>
+            <td><a class="button" href="${equipamento[13]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
 
     document.getElementById("conteudo").innerHTML = `
     <div class="card">
