@@ -8,23 +8,101 @@
 
 <style>
 body { font-family: Arial; background:#f2f4f7; margin:0; }
-header { background:white; padding:15px 40px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 4px rgba(0,0,0,0.05);}
-.logo-area { display:flex; align-items:center; gap:15px;}
-.logo-area img { height:45px;}
-h1 { color:#1f3c88; font-size:22px; margin:0;}
-.top-buttons { display:flex; gap:10px;}
-.button { padding:8px 15px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:bold; color:white; cursor:pointer;}
-.btn-blue { background:#1f3c88;}
-.btn-red { background:#d64545;}
-.container { max-width:1100px; margin:40px auto; padding:0 20px;}
-.card { background:white; padding:25px; border-radius:10px; margin-bottom:25px; box-shadow:0 2px 6px rgba(0,0,0,0.05);}
-.status { padding:8px 12px; border-radius:6px; font-weight:bold; display:inline-block;}
-.status.ok { background:#c8e6c9; color:#2e7d32;}
-.status.bad { background:#ffcdd2; color:#c62828;}
-table { width:100%; border-collapse:collapse;}
-th, td { padding:12px; border-bottom:1px solid #ddd;}
-th { background:#e0e0e0; text-align:left;}
-footer { text-align:center; font-size:12px; margin:20px; color:#777;}
+
+header {
+    background:white;
+    padding:15px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 4px rgba(0,0,0,0.05);
+}
+
+.logo-area { display:flex; align-items:center; gap:15px; }
+.logo-area img { height:45px; }
+h1 { color:#1f3c88; font-size:22px; margin:0; }
+
+.top-buttons { display:flex; gap:10px; }
+
+.button {
+    padding:8px 15px;
+    border-radius:6px;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:bold;
+    color:white;
+    cursor:pointer;
+}
+
+.btn-blue { background:#1f3c88; }
+.btn-red { background:#d64545; }
+
+.container {
+    max-width:1100px;
+    margin:40px auto;
+    padding:0 20px;
+}
+
+.card {
+    background:white;
+    padding:18px 25px;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.card-relatorios {
+    padding:30px 25px;
+}
+
+.status-area { text-align:right; }
+
+.status {
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:bold;
+    font-size:15px;
+    display:inline-block;
+    margin-bottom:12px;
+}
+
+.status.ok { background:#c8e6c9; color:#2e7d32; }
+.status.bad { background:#ffcdd2; color:#c62828; }
+
+.proxima-label {
+    font-size:14px;
+    color:#555;
+}
+
+.proxima-data {
+    font-size:22px;
+    font-weight:bold;
+    color:#1f3c88;
+}
+
+table { width:100%; border-collapse:collapse; }
+
+th, td {
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}
+
+th {
+    background:#e0e0e0;
+    text-align:left;
+}
+
+footer {
+    text-align:center;
+    font-size:12px;
+    margin:20px;
+    color:#777;
+}
+
+@media print {
+    .btn-blue, .btn-red { display:none; }
+    .card { page-break-inside: avoid; }
+}
 </style>
 </head>
 
@@ -35,9 +113,10 @@ footer { text-align:center; font-size:12px; margin:20px; color:#777;}
 <img src="DGX - ENGENHARIA.png">
 <h1>DGX | Engenharia Industrial</h1>
 </div>
+
 <div class="top-buttons">
 <a class="button btn-blue" onclick="window.print()">Gerar PDF</a>
-<a class="button btn-red" onclick="window.close()">Sair</a>
+<a class="button btn-red" onclick="fecharPagina()">Sair</a>
 </div>
 </header>
 
@@ -51,18 +130,23 @@ footer { text-align:center; font-size:12px; margin:20px; color:#777;}
 <p><b>PMTA:</b> <span id="pmta"></span></p>
 <p><b>Fluido:</b> <span id="fluido"></span></p>
 </div>
-<div style="text-align:right;">
+
+<div class="status-area">
 <div id="statusBox"></div>
-<p><b>Próxima inspeção</b><br><span id="proxima"></span></p>
+<div class="proxima-label">Próxima inspeção</div>
+<div class="proxima-data" id="proxima"></div>
 </div>
 </div>
 </div>
 
-<div class="card">
+<div class="card card-relatorios">
 <h3>RELATÓRIOS</h3>
 <table>
 <thead>
-<tr><th>Tipo</th><th>Visualizar</th></tr>
+<tr>
+<th>Tipo</th>
+<th>Visualizar</th>
+</tr>
 </thead>
 <tbody id="relatorios"></tbody>
 </table>
@@ -85,6 +169,11 @@ Página gerada automaticamente em <span id="dataGeracao"></span>
 </footer>
 
 <script>
+
+function fecharPagina(){
+    window.open('', '_self');
+    window.close();
+}
 
 const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
@@ -129,24 +218,27 @@ const tabela = document.getElementById("relatorios");
 
 relatorios.forEach(r=>{
 if(equipamento[r[1]]){
+let link = equipamento[r[1]].replace("/view","/preview");
 tabela.innerHTML += `
 <tr>
 <td>${r[0]}</td>
-<td><a class="button btn-blue" href="${equipamento[r[1]]}" target="_blank">Visualizar</a></td>
+<td><a class="button btn-blue" href="${link}" target="_blank">Visualizar</a></td>
 </tr>`;
 }
 });
 
 if(equipamento["LINK - ART"]){
+let artLink = equipamento["LINK - ART"].replace("/view","/preview");
 document.getElementById("art").innerHTML =
-`<a class="button btn-blue" href="${equipamento["LINK - ART"]}" target="_blank">Visualizar ART</a>`;
+`<a class="button btn-blue" href="${artLink}" target="_blank">Visualizar ART</a>`;
 }else{
 document.getElementById("art").innerText = "Não disponível";
 }
 
 if(equipamento["LINK - PRONTUÁRIO"]){
+let prontLink = equipamento["LINK - PRONTUÁRIO"].replace("/view","/preview");
 document.getElementById("prontuario").innerHTML =
-`<a class="button btn-blue" href="${equipamento["LINK - PRONTUÁRIO"]}" target="_blank">Visualizar Prontuário</a>`;
+`<a class="button btn-blue" href="${prontLink}" target="_blank">Visualizar Prontuário</a>`;
 }else{
 document.getElementById("prontuario").innerText = "Não disponível";
 }
