@@ -3,252 +3,192 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DGX - Gestão NR13</title>
+<title>DGX | Gestão NR-13</title>
 
 <style>
+
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background:#f4f6f9;
     margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color:#f4f6f9;
 }
 
-.header {
-    background:white;
-    padding:20px 40px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+/* HEADER */
+header{
+    background-color:#ffffff;
+    padding:15px 40px;
+    display:flex;
+    align-items:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
 }
 
-.header h1 {
-    color:#0b3c5d;
+header img{
+    height:60px;
+    margin-right:20px;
+}
+
+header h2{
     margin:0;
+    color:#1f3c88;
     font-weight:600;
 }
 
-.container {
+/* CONTAINER */
+.container{
     max-width:1100px;
     margin:40px auto;
+    padding:0 20px;
 }
 
-.card {
-    background:white;
+/* CARD */
+.card{
+    background:#ffffff;
     padding:30px;
-    border-radius:12px;
-    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
     margin-bottom:30px;
 }
 
-.top-grid {
+/* EQUIPAMENTO GRID */
+.equipamento{
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
 }
 
-.top-left h2 {
+.equip-left h1{
     margin-top:0;
 }
 
-.top-left p {
-    margin:8px 0;
+.equip-left p{
+    margin:6px 0;
 }
 
-.top-right {
+.equip-right{
     text-align:right;
 }
 
-.status-ok {
+.status{
+    display:inline-block;
+    padding:10px 18px;
+    border-radius:8px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.status.ok{
     background:#d4edda;
     color:#155724;
-    padding:10px 18px;
-    border-radius:8px;
-    font-weight:600;
-    display:inline-block;
-    margin-bottom:15px;
 }
 
-.status-bad {
+.status.vencida{
     background:#f8d7da;
     color:#721c24;
-    padding:10px 18px;
-    border-radius:8px;
-    font-weight:600;
-    display:inline-block;
-    margin-bottom:15px;
 }
 
-.next-inspection-label {
+.proxima{
     font-size:14px;
     color:#666;
 }
 
-.next-inspection-date {
+.data-proxima{
     font-size:22px;
-    font-weight:600;
+    font-weight:bold;
     color:#333;
 }
 
-.button {
-    background:#1f5fa8;
-    color:white;
-    padding:8px 15px;
-    border-radius:6px;
-    text-decoration:none;
-    font-size:14px;
-    display:inline-block;
-}
-
-.button:hover {
-    background:#15447a;
-}
-
-table {
+/* TABELA */
+table{
     width:100%;
     border-collapse:collapse;
     margin-top:15px;
 }
 
-th, td {
-    padding:14px;
-    border-bottom:1px solid #e5e7eb;
+th{
+    background:#e9ecef;
+    text-align:left;
+    padding:12px;
 }
 
-th {
-    background:#f0f2f5;
-    text-align:left;
-    font-weight:600;
+td{
+    padding:12px;
+    border-bottom:1px solid #eee;
 }
+
+/* BOTÃO */
+.button{
+    background:#1f3c88;
+    color:white;
+    padding:8px 14px;
+    border-radius:6px;
+    text-decoration:none;
+    font-size:14px;
+}
+
+.button:hover{
+    background:#162d66;
+}
+
 </style>
 </head>
-
 <body>
 
-<div class="header">
-<h1>DGX | Engenharia Industrial</h1>
-</div>
+<header>
+    <img src="DGX - ENGENHARIA.png" alt="DGX Engenharia Industrial">
+    <h2>DGX | Engenharia Industrial</h2>
+</header>
 
 <div class="container">
-<div id="conteudo"></div>
-</div>
 
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const tag = urlParams.get('tag');
-
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
-
-fetch(csvUrl)
-.then(response => response.text())
-.then(data => {
-
-    const linhas = data.split("\n").map(l => l.replace(/\r/g, ""));
-
-    const dados = linhas.map(l => {
-        const resultado = [];
-        let atual = "";
-        let dentroAspas = false;
-
-        for (let char of l) {
-            if (char === '"') {
-                dentroAspas = !dentroAspas;
-            } else if (char === ',' && !dentroAspas) {
-                resultado.push(atual);
-                atual = "";
-            } else {
-                atual += char;
-            }
-        }
-        resultado.push(atual);
-        return resultado;
-    });
-
-    const registros = dados.slice(1);
-    const equipamento = registros.find(r => r[0] === tag);
-
-    if (!equipamento) {
-        document.getElementById("conteudo").innerHTML =
-        "<div class='card'><h2>Equipamento não encontrado</h2></div>";
-        return;
-    }
-
-    const statusTexto = equipamento[9];
-    const statusClass = statusTexto === "DENTRO DO PRAZO" ? "status-ok" : "status-bad";
-    const dataInspecao = equipamento[6];
-
-    let relatoriosHTML = "";
-
-    if (equipamento[10])
-        relatoriosHTML += `
-        <tr>
-            <td>Inspeção Visual Externa</td>
-            <td>${dataInspecao}</td>
-            <td><a class="button" href="${equipamento[10]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
-
-    if (equipamento[11])
-        relatoriosHTML += `
-        <tr>
-            <td>Inspeção Visual Interna</td>
-            <td>${dataInspecao}</td>
-            <td><a class="button" href="${equipamento[11]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
-
-    if (equipamento[12])
-        relatoriosHTML += `
-        <tr>
-            <td>Medição de Espessura</td>
-            <td>${dataInspecao}</td>
-            <td><a class="button" href="${equipamento[12]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
-
-    if (equipamento[13])
-        relatoriosHTML += `
-        <tr>
-            <td>Teste Hidrostático</td>
-            <td>${dataInspecao}</td>
-            <td><a class="button" href="${equipamento[13]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
-
-    document.getElementById("conteudo").innerHTML = `
-    <div class="card">
-        <div class="top-grid">
-            <div class="top-left">
-                <h2>Equipamento: ${equipamento[0]}</h2>
-                <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
-                <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
-                <p><strong>Fluido:</strong> ${equipamento[5]}</p>
-            </div>
-
-            <div class="top-right">
-                <div class="${statusClass}">${statusTexto}</div>
-                <div class="next-inspection-label">Próxima inspeção</div>
-                <div class="next-inspection-date">${equipamento[8]}</div>
-            </div>
+    <!-- EQUIPAMENTO -->
+    <div class="card equipamento">
+        
+        <div class="equip-left">
+            <h1>Equipamento: MA01-513M0053</h1>
+            <p><strong>Categoria NR-13:</strong> III</p>
+            <p><strong>PMTA:</strong> 6,0 bar</p>
+            <p><strong>Fluido:</strong> Metanol / Água</p>
         </div>
+
+        <div class="equip-right">
+            <div class="status ok">DENTRO DO PRAZO</div>
+            <div class="proxima">Próxima inspeção</div>
+            <div class="data-proxima">28/01/2032</div>
+        </div>
+
     </div>
 
+    <!-- RELATÓRIOS -->
     <div class="card">
         <h3>RELATÓRIOS</h3>
+
         <table>
             <tr>
                 <th>Tipo</th>
                 <th>Data</th>
                 <th>Download</th>
             </tr>
-            ${relatoriosHTML}
+            <tr>
+                <td>Inspeção Visual Externa</td>
+                <td>28/01/2026</td>
+                <td><a href="#" class="button">Baixar PDF</a></td>
+            </tr>
         </table>
     </div>
 
+    <!-- ART -->
     <div class="card">
         <h3>ART</h3>
-        ${equipamento[14] ? `<a class="button" href="${equipamento[14]}" target="_blank">Baixar ART</a>` : "Não disponível"}
+        <p>Não disponível</p>
     </div>
 
+    <!-- PRONTUÁRIO -->
     <div class="card">
         <h3>PRONTUÁRIO NR-13</h3>
-        ${equipamento[15] ? `<a class="button" href="${equipamento[15]}" target="_blank">Baixar Prontuário</a>` : "Não disponível"}
+        <p>Não disponível</p>
     </div>
-    `;
-});
-</script>
+
+</div>
 
 </body>
 </html>
