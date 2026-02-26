@@ -2,331 +2,259 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DGX | Gestão NR-13</title>
+<title>DGX | Engenharia Industrial</title>
 
 <style>
-body{
+body {
     margin:0;
-    font-family:Arial, Helvetica, sans-serif;
-    background:#f4f6f9;
+    font-family: Arial, sans-serif;
+    background:#f2f4f7;
 }
 
-/* HEADER */
-header{
-    background:#ffffff;
+header {
+    background:white;
     padding:15px 40px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.header-left{
+.logo-area {
     display:flex;
     align-items:center;
+    gap:15px;
 }
 
-header img{
-    height:60px;
-    margin-right:20px;
+.logo-area img {
+    height:45px;
 }
 
-header h2{
-    margin:0;
+.logo-area h1 {
+    font-size:22px;
     color:#1f3c88;
-    font-weight:600;
+    margin:0;
 }
 
-.header-buttons{
-    display:flex;
-    gap:10px;
-}
-
-.btn{
+.top-buttons button {
+    padding:8px 15px;
     border:none;
-    padding:8px 16px;
-    border-radius:8px;
+    border-radius:6px;
+    font-weight:bold;
     cursor:pointer;
-    font-weight:600;
-    font-size:14px;
+    margin-left:10px;
 }
 
-.btn-print{
+.btn-pdf {
     background:#1f3c88;
     color:white;
 }
 
-.btn-exit{
-    background:#dc3545;
+.btn-sair {
+    background:#d32f2f;
     color:white;
 }
 
-/* CONTAINER */
-.container{
-    max-width:1100px;
+.container {
+    width:80%;
     margin:40px auto;
-    padding:0 20px;
 }
 
-/* CARD */
-.card{
-    background:#ffffff;
-    padding:25px 30px;
+.card {
+    background:white;
+    padding:25px;
     border-radius:10px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05);
     margin-bottom:25px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
 }
 
-.card.small{
-    padding:15px 25px;
-}
-
-/* GRID */
-.equipamento{
+.card-flex {
     display:flex;
     justify-content:space-between;
     align-items:flex-start;
 }
 
-.equip-left h1{
-    margin-top:0;
-}
-
-.equip-left p{
-    margin:6px 0;
-}
-
-.equip-right{
+.status-box {
     text-align:right;
 }
 
-.status{
-    display:inline-block;
-    padding:10px 18px;
-    border-radius:8px;
+.status {
+    padding:8px 15px;
+    border-radius:6px;
     font-weight:bold;
+    display:inline-block;
     margin-bottom:10px;
 }
 
-.status.ok{
-    background:#d4edda;
-    color:#155724;
+.status.ok {
+    background:#c8e6c9;
+    color:#256029;
 }
 
-.status.vencida{
-    background:#f8d7da;
-    color:#721c24;
+.status.vencido {
+    background:#ffcdd2;
+    color:#c62828;
 }
 
-.proxima{
-    font-size:14px;
-    color:#666;
-}
-
-.data-proxima{
-    font-size:22px;
-    font-weight:bold;
-    color:#333;
-}
-
-/* TABELA */
-table{
+.relatorio-table {
     width:100%;
     border-collapse:collapse;
     margin-top:15px;
 }
 
-th{
-    background:#e9ecef;
+.relatorio-table th {
+    background:#e0e0e0;
+    padding:10px;
     text-align:left;
-    padding:12px;
 }
 
-td{
-    padding:12px;
-    border-bottom:1px solid #eee;
+.relatorio-table td {
+    padding:10px;
+    border-bottom:1px solid #ddd;
 }
 
-.button{
+.button {
     background:#1f3c88;
     color:white;
     padding:6px 12px;
-    border-radius:6px;
+    border-radius:5px;
     text-decoration:none;
-    font-size:13px;
+    font-size:14px;
 }
 
-/* FOOTER */
-footer{
+footer {
     text-align:center;
-    font-size:12px;
-    color:#666;
-    padding:20px 0;
-}
-
-/* PRINT */
-@media print{
-    header{
-        display:none;
-    }
+    padding:15px;
+    font-size:13px;
+    color:#555;
 }
 </style>
 </head>
+
 <body>
 
 <header>
-    <div class="header-left">
-        <img src="DGX - ENGENHARIA.png" alt="DGX Engenharia Industrial">
-        <h2>DGX | Engenharia Industrial</h2>
+    <div class="logo-area">
+        <img src="DGX - ENGENHARIA.png">
+        <h1>DGX | Engenharia Industrial</h1>
     </div>
 
-    <div class="header-buttons">
-        <button class="btn btn-print" onclick="window.print()">📄 Gerar PDF</button>
-        <button class="btn btn-exit" onclick="fecharPagina()">🚪 Sair</button>
+    <div class="top-buttons">
+        <button class="btn-pdf" onclick="window.print()">Gerar PDF</button>
+        <button class="btn-sair" onclick="window.close()">Sair</button>
     </div>
 </header>
 
 <div class="container">
-<div id="conteudo"></div>
-</div>
 
-<footer id="rodape"></footer>
-
-<script>
-
-/* ===== FUNÇÃO FECHAR ===== */
-function fecharPagina(){
-    window.close();
-    history.back();
-}
-
-/* ===== DATA DE GERAÇÃO ===== */
-const agora = new Date();
-document.getElementById("rodape").innerHTML =
-"Data de geração: " +
-agora.toLocaleDateString('pt-BR') + " - " +
-agora.toLocaleTimeString('pt-BR');
-
-/* ===== PARÂMETRO TAG ===== */
-const urlParams = new URLSearchParams(window.location.search);
-const tag = urlParams.get('tag');
-
-if(!tag){
-    document.getElementById("conteudo").innerHTML =
-    "<div class='card'><h2>Nenhuma TAG informada na URL.</h2></div>";
-}
-
-/* ===== LINK CSV ===== */
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
-
-/* ===== FUNÇÃO ROBUSTA CSV ===== */
-function parseCSV(text){
-    const linhas = text.split("\n").map(l => l.replace(/\r/g,""));
-    return linhas.map(linha=>{
-        const resultado=[];
-        let atual="";
-        let dentroAspas=false;
-
-        for(let i=0;i<linha.length;i++){
-            const char=linha[i];
-
-            if(char === '"'){
-                dentroAspas = !dentroAspas;
-            }
-            else if(char === ',' && !dentroAspas){
-                resultado.push(atual);
-                atual="";
-            }
-            else{
-                atual+=char;
-            }
-        }
-        resultado.push(atual);
-        return resultado;
-    });
-}
-
-/* ===== BUSCA DADOS ===== */
-fetch(csvUrl)
-.then(response => response.text())
-.then(data => {
-
-    const dados = parseCSV(data);
-    const registros = dados.slice(1);
-    const equipamento = registros.find(r => r[0] === tag);
-
-    if (!equipamento) {
-        document.getElementById("conteudo").innerHTML =
-        "<div class='card'><h2>Equipamento não encontrado.</h2></div>";
-        return;
-    }
-
-    const statusTexto = equipamento[9];
-    const statusClass = statusTexto === "DENTRO DO PRAZO" ? "ok" : "vencida";
-
-    let relatoriosHTML = "";
-
-    const tipos = [
-        {nome:"Inspeção Visual Externa", index:10},
-        {nome:"Inspeção Visual Interna", index:11},
-        {nome:"Medição de Espessura", index:12},
-        {nome:"Teste Hidrostático", index:13}
-    ];
-
-    tipos.forEach(tipo=>{
-        if(equipamento[tipo.index]){
-            relatoriosHTML += `
-            <tr>
-                <td>${tipo.nome}</td>
-                <td>${equipamento[6]}</td>
-                <td><a class="button" href="${equipamento[tipo.index]}" target="_blank">Baixar PDF</a></td>
-            </tr>`;
-        }
-    });
-
-    document.getElementById("conteudo").innerHTML = `
-        <div class="card equipamento">
-            <div class="equip-left">
-                <h1>Equipamento: ${equipamento[0]}</h1>
-                <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
-                <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
-                <p><strong>Fluido:</strong> ${equipamento[5]}</p>
-            </div>
-
-            <div class="equip-right">
-                <div class="status ${statusClass}">
-                    ${statusTexto}
-                </div>
-                <div class="proxima">Próxima inspeção</div>
-                <div class="data-proxima">${equipamento[8]}</div>
-            </div>
+    <div class="card card-flex">
+        <div>
+            <h2 id="equipamento"></h2>
+            <p><strong>Categoria NR-13:</strong> <span id="categoria"></span></p>
+            <p><strong>PMTA:</strong> <span id="pmta"></span></p>
+            <p><strong>Fluido:</strong> <span id="fluido"></span></p>
         </div>
 
-        <div class="card">
-            <h3>RELATÓRIOS</h3>
-            <table>
+        <div class="status-box">
+            <div id="status" class="status"></div>
+            <div>
+                <small>Próxima inspeção</small><br>
+                <strong id="proxima"></strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>RELATÓRIOS</h3>
+        <table class="relatorio-table">
+            <thead>
                 <tr>
                     <th>Tipo</th>
                     <th>Data</th>
-                    <th>Download</th>
+                    <th>Visualizar</th>
                 </tr>
-                ${relatoriosHTML}
-            </table>
-        </div>
+            </thead>
+            <tbody id="relatorios"></tbody>
+        </table>
+    </div>
 
-        <div class="card small">
-            <h3 style="margin:0 0 10px 0;">ART</h3>
-            ${equipamento[14] ? `<a class="button" href="${equipamento[14]}" target="_blank">Baixar ART</a>` : "Não disponível"}
-        </div>
+    <div class="card" style="padding:15px;">
+        <h3>ART</h3>
+        <div id="art"></div>
+    </div>
 
-        <div class="card small">
-            <h3 style="margin:0 0 10px 0;">PRONTUÁRIO NR-13</h3>
-            ${equipamento[15] ? `<a class="button" href="${equipamento[15]}" target="_blank">Baixar Prontuário</a>` : "Não disponível"}
-        </div>
-    `;
+    <div class="card" style="padding:15px;">
+        <h3>PRONTUÁRIO NR-13</h3>
+        <div id="prontuario"></div>
+    </div>
+
+</div>
+
+<footer>
+    Documento gerado automaticamente em <span id="dataGeracao"></span>
+</footer>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const tag = urlParams.get('tag');
+
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+
+fetch(sheetURL)
+.then(response => response.text())
+.then(data => {
+
+    const linhas = data.split("\n").map(l => l.split(","));
+    const registros = linhas.slice(1);
+
+    const equipamento = registros.find(r => r[0] === tag);
+    if (!equipamento) return;
+
+    document.getElementById("equipamento").innerText = "Equipamento: " + equipamento[0];
+    document.getElementById("categoria").innerText = equipamento[1];
+    document.getElementById("pmta").innerText = equipamento[2] + " bar";
+    document.getElementById("fluido").innerText = equipamento[3];
+    document.getElementById("proxima").innerText = equipamento[8];
+
+    const status = document.getElementById("status");
+    status.innerText = equipamento[9];
+    status.classList.add(equipamento[9] === "DENTRO DO PRAZO" ? "ok" : "vencido");
+
+    const relatoriosTipos = [
+        {nome:"Inspeção Visual Externa", index:10, dataIndex:14},
+        {nome:"Inspeção Visual Interna", index:11, dataIndex:15},
+        {nome:"Medição de Espessura", index:12, dataIndex:16},
+        {nome:"Teste Hidrostático", index:13, dataIndex:17}
+    ];
+
+    const tabela = document.getElementById("relatorios");
+
+    relatoriosTipos.forEach(tipo => {
+        if (equipamento[tipo.index]) {
+            tabela.innerHTML += `
+                <tr>
+                    <td>${tipo.nome}</td>
+                    <td>${equipamento[tipo.dataIndex] || "-"}</td>
+                    <td><a class="button" href="${equipamento[tipo.index]}" target="_blank">Visualizar</a></td>
+                </tr>
+            `;
+        }
+    });
+
+    document.getElementById("art").innerHTML =
+        equipamento[18]
+        ? `<a class="button" href="${equipamento[18]}" target="_blank">Visualizar ART</a>`
+        : "Não disponível";
+
+    document.getElementById("prontuario").innerHTML =
+        equipamento[19]
+        ? `<a class="button" href="${equipamento[19]}" target="_blank">Visualizar Prontuário</a>`
+        : "Não disponível";
+
 });
 
+document.getElementById("dataGeracao").innerText =
+    new Date().toLocaleString("pt-BR");
 </script>
 
 </body>
