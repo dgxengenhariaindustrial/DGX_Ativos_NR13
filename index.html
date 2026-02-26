@@ -147,46 +147,45 @@ footer{
 
 <div class="container">
 
-    <div class="card card-flex">
+<div class="card card-flex">
+    <div>
+        <h2 id="equipamento"></h2>
+        <p><strong>Categoria NR-13:</strong> <span id="categoria"></span></p>
+        <p><strong>PMTA:</strong> <span id="pmta"></span></p>
+        <p><strong>Fluido:</strong> <span id="fluido"></span></p>
+    </div>
+
+    <div class="status-box">
+        <div id="status" class="status"></div>
         <div>
-            <h2 id="equipamento"></h2>
-            <p><strong>Categoria NR-13:</strong> <span id="categoria"></span></p>
-            <p><strong>PMTA:</strong> <span id="pmta"></span></p>
-            <p><strong>Fluido:</strong> <span id="fluido"></span></p>
-        </div>
-
-        <div class="status-box">
-            <div id="status" class="status"></div>
-            <div>
-                <small>Próxima inspeção</small><br>
-                <strong id="proxima"></strong>
-            </div>
+            <small>Próxima inspeção</small><br>
+            <strong id="proxima"></strong>
         </div>
     </div>
+</div>
 
-    <div class="card">
-        <h3>RELATÓRIOS</h3>
-        <table class="relatorio-table">
-            <thead>
-                <tr>
-                    <th>Tipo</th>
-                    <th>Data</th>
-                    <th>Visualizar</th>
-                </tr>
-            </thead>
-            <tbody id="relatorios"></tbody>
-        </table>
-    </div>
+<div class="card">
+    <h3>RELATÓRIOS</h3>
+    <table class="relatorio-table">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Visualizar</th>
+            </tr>
+        </thead>
+        <tbody id="relatorios"></tbody>
+    </table>
+</div>
 
-    <div class="card" style="padding:15px;">
-        <h3>ART</h3>
-        <div id="art"></div>
-    </div>
+<div class="card" style="padding:15px;">
+    <h3>ART</h3>
+    <div id="art"></div>
+</div>
 
-    <div class="card" style="padding:15px;">
-        <h3>PRONTUÁRIO NR-13</h3>
-        <div id="prontuario"></div>
-    </div>
+<div class="card" style="padding:15px;">
+    <h3>PRONTUÁRIO NR-13</h3>
+    <div id="prontuario"></div>
+</div>
 
 </div>
 
@@ -196,23 +195,23 @@ Documento gerado automaticamente em <span id="dataGeracao"></span>
 
 <script>
 
-const urlParams = new URLSearchParams(window.location.search);
-const tag = urlParams.get('tag');
-
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+
+const urlParams = new URLSearchParams(window.location.search);
+const tag = urlParams.get("tag");
 
 fetch(sheetURL)
 .then(response => response.text())
-.then(data => {
+.then(csv => {
 
-    const linhas = data.split("\n").map(l => l.split(","));
+    const linhas = csv.split("\n").map(l => l.split(","));
     const cabecalho = linhas[0];
-    const registros = linhas.slice(1);
+    const dados = linhas.slice(1);
 
-    const getIndex = (nome) => cabecalho.indexOf(nome);
+    const getIndex = nome => cabecalho.indexOf(nome);
 
-    const equipamento = registros.find(r => r[getIndex("TAG EQUIPAMENTO")] === tag);
-    if (!equipamento) return;
+    const equipamento = dados.find(linha => linha[getIndex("TAG EQUIPAMENTO")] === tag);
+    if(!equipamento) return;
 
     document.getElementById("equipamento").innerText = "Equipamento: " + equipamento[getIndex("TAG EQUIPAMENTO")];
     document.getElementById("categoria").innerText = equipamento[getIndex("CATEGORIA NR-13")];
@@ -225,7 +224,7 @@ fetch(sheetURL)
     status.innerText = statusTexto;
     status.classList.add(statusTexto === "DENTRO DO PRAZO" ? "ok" : "vencido");
 
-    const relatorios = [
+    const relatoriosColunas = [
         {nome:"Inspeção Visual Externa", coluna:"LINK - VISUAL EXTERNA"},
         {nome:"Inspeção Visual Interna", coluna:"LINK - VISUAL INTERNA"},
         {nome:"Medição de Espessura", coluna:"LINK - MEDIÇÃO DE ESPESSURA"},
@@ -235,13 +234,12 @@ fetch(sheetURL)
     const tabela = document.getElementById("relatorios");
     tabela.innerHTML = "";
 
-    relatorios.forEach(r => {
+    relatoriosColunas.forEach(r => {
         const index = getIndex(r.coluna);
-        if (equipamento[index]) {
+        if(index !== -1 && equipamento[index]){
             tabela.innerHTML += `
                 <tr>
                     <td>${r.nome}</td>
-                    <td>-</td>
                     <td><a class="button" href="${equipamento[index]}" target="_blank">Visualizar</a></td>
                 </tr>
             `;
