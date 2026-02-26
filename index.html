@@ -43,7 +43,7 @@ fetch(csvUrl)
 .then(response => response.text())
 .then(data => {
     const linhas = data.split("\n");
-    const dados = linhas.map(l => l.split(","));
+    const dados = linhas.map(l => l.split(";"));
     
     const cabecalho = dados[0];
     const registros = dados.slice(1);
