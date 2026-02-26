@@ -19,7 +19,13 @@ header{
     padding:15px 40px;
     display:flex;
     align-items:center;
+    justify-content:space-between;
     box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
 }
 
 header img{
@@ -31,6 +37,24 @@ header h2{
     margin:0;
     color:#1f3c88;
     font-weight:600;
+}
+
+.logout-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+}
+
+.logout-btn:hover{
+    background:#b02a37;
 }
 
 /* CONTAINER */
@@ -134,8 +158,21 @@ td{
 <body>
 
 <header>
-    <img src="DGX - ENGENHARIA.png" alt="DGX Engenharia Industrial">
-    <h2>DGX | Engenharia Industrial</h2>
+
+    <div class="header-left">
+        <img src="DGX - ENGENHARIA.png" alt="DGX Engenharia Industrial">
+        <h2>DGX | Engenharia Industrial</h2>
+    </div>
+
+    <button class="logout-btn" onclick="window.location.href=window.location.pathname">
+        <!-- ÍCONE SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
+            <path d="M6 2a2 2 0 0 0-2 2v2h1V4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2H4v2a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6z"/>
+            <path d="M.146 8.354a.5.5 0 0 1 0-.708L3.793 4H9.5a.5.5 0 0 1 0 1H3.793l-3.647 3.646a.5.5 0 0 1-.708 0z"/>
+        </svg>
+        Sair
+    </button>
+
 </header>
 
 <div class="container">
