@@ -57,17 +57,9 @@ header h2{
     color:white;
 }
 
-.btn-print:hover{
-    background:#162d66;
-}
-
 .btn-exit{
     background:#dc3545;
     color:white;
-}
-
-.btn-exit:hover{
-    background:#b02a37;
 }
 
 /* CONTAINER */
@@ -86,7 +78,7 @@ header h2{
     margin-bottom:30px;
 }
 
-/* EQUIPAMENTO GRID */
+/* GRID */
 .equipamento{
     display:flex;
     justify-content:space-between;
@@ -134,12 +126,6 @@ header h2{
     color:#333;
 }
 
-.data-geracao{
-    margin-top:20px;
-    font-size:12px;
-    color:#666;
-}
-
 /* TABELA */
 table{
     width:100%;
@@ -167,11 +153,15 @@ td{
     font-size:13px;
 }
 
-.button:hover{
-    background:#162d66;
+/* FOOTER */
+footer{
+    text-align:center;
+    font-size:12px;
+    color:#666;
+    padding:20px 0;
 }
 
-/* OCULTAR BOTÕES NA IMPRESSÃO */
+/* PRINT */
 @media print{
     header{
         display:none;
@@ -179,7 +169,6 @@ td{
 }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -198,77 +187,147 @@ td{
 <div id="conteudo"></div>
 </div>
 
+<footer id="rodape"></footer>
+
 <script>
 
-/* ====== DATA DE GERAÇÃO ====== */
+/* ===== DATA DE GERAÇÃO ===== */
 const agora = new Date();
 const dataGeracao = agora.toLocaleDateString('pt-BR') + 
                     " - " + 
                     agora.toLocaleTimeString('pt-BR');
 
-/* ====== DADOS FIXOS (PODEM VOLTAR A SER DINÂMICOS) ====== */
-const equipamento = {
-    tag: "MA01-513M0053",
-    categoria: "III",
-    pmta: "6,0",
-    fluido: "Metanol / Água",
-    status: "DENTRO DO PRAZO",
-    proxima: "28/01/2032",
-    dataInspecao: "28/01/2026"
-};
+document.getElementById("rodape").innerHTML =
+"Data de geração: " + dataGeracao;
 
-const statusClass = equipamento.status === "DENTRO DO PRAZO" ? "ok" : "vencida";
+/* ===== PARÂMETRO TAG ===== */
+const urlParams = new URLSearchParams(window.location.search);
+const tag = urlParams.get('tag');
 
-/* ====== RENDERIZAÇÃO ====== */
+if(!tag){
+    document.getElementById("conteudo").innerHTML =
+    "<div class='card'><h2>Nenhuma TAG informada na URL.</h2></div>";
+}
 
-document.getElementById("conteudo").innerHTML = `
-    <div class="card equipamento">
-        <div class="equip-left">
-            <h1>Equipamento: ${equipamento.tag}</h1>
-            <p><strong>Categoria NR-13:</strong> ${equipamento.categoria}</p>
-            <p><strong>PMTA:</strong> ${equipamento.pmta} bar</p>
-            <p><strong>Fluido:</strong> ${equipamento.fluido}</p>
-        </div>
+/* ===== LINK CSV ===== */
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
-        <div class="equip-right">
-            <div class="status ${statusClass}">
-                ${equipamento.status}
+/* ===== FUNÇÃO ROBUSTA PARA LER CSV ===== */
+function parseCSV(text){
+    const linhas = text.split("\n").map(l => l.replace(/\r/g,""));
+    return linhas.map(linha=>{
+        const resultado=[];
+        let atual="";
+        let dentroAspas=false;
+
+        for(let i=0;i<linha.length;i++){
+            const char=linha[i];
+
+            if(char === '"'){
+                dentroAspas = !dentroAspas;
+            }
+            else if(char === ',' && !dentroAspas){
+                resultado.push(atual);
+                atual="";
+            }
+            else{
+                atual+=char;
+            }
+        }
+        resultado.push(atual);
+        return resultado;
+    });
+}
+
+/* ===== BUSCA DADOS ===== */
+fetch(csvUrl)
+.then(response => response.text())
+.then(data => {
+
+    const dados = parseCSV(data);
+    const registros = dados.slice(1);
+    const equipamento = registros.find(r => r[0] === tag);
+
+    if (!equipamento) {
+        document.getElementById("conteudo").innerHTML =
+        "<div class='card'><h2>Equipamento não encontrado.</h2></div>";
+        return;
+    }
+
+    const statusTexto = equipamento[9];
+    const statusClass = statusTexto === "DENTRO DO PRAZO" ? "ok" : "vencida";
+
+    let relatoriosHTML = "";
+
+    if (equipamento[10])
+        relatoriosHTML += `<tr>
+            <td>Inspeção Visual Externa</td>
+            <td>${equipamento[6]}</td>
+            <td><a class="button" href="${equipamento[10]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
+    if (equipamento[11])
+        relatoriosHTML += `<tr>
+            <td>Inspeção Visual Interna</td>
+            <td>${equipamento[6]}</td>
+            <td><a class="button" href="${equipamento[11]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
+    if (equipamento[12])
+        relatoriosHTML += `<tr>
+            <td>Medição de Espessura</td>
+            <td>${equipamento[6]}</td>
+            <td><a class="button" href="${equipamento[12]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
+    if (equipamento[13])
+        relatoriosHTML += `<tr>
+            <td>Teste Hidrostático</td>
+            <td>${equipamento[6]}</td>
+            <td><a class="button" href="${equipamento[13]}" target="_blank">Baixar PDF</a></td>
+        </tr>`;
+
+    document.getElementById("conteudo").innerHTML = `
+        <div class="card equipamento">
+            <div class="equip-left">
+                <h1>Equipamento: ${equipamento[0]}</h1>
+                <p><strong>Categoria NR-13:</strong> ${equipamento[3]}</p>
+                <p><strong>PMTA:</strong> ${equipamento[4]} bar</p>
+                <p><strong>Fluido:</strong> ${equipamento[5]}</p>
             </div>
-            <div class="proxima">Próxima inspeção</div>
-            <div class="data-proxima">${equipamento.proxima}</div>
+
+            <div class="equip-right">
+                <div class="status ${statusClass}">
+                    ${statusTexto}
+                </div>
+                <div class="proxima">Próxima inspeção</div>
+                <div class="data-proxima">${equipamento[8]}</div>
+            </div>
         </div>
 
-        <div class="data-geracao">
-            Data de geração: ${dataGeracao}
+        <div class="card">
+            <h3>RELATÓRIOS</h3>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Data</th>
+                    <th>Download</th>
+                </tr>
+                ${relatoriosHTML}
+            </table>
         </div>
-    </div>
 
-    <div class="card">
-        <h3>RELATÓRIOS</h3>
-        <table>
-            <tr>
-                <th>Tipo</th>
-                <th>Data</th>
-                <th>Download</th>
-            </tr>
-            <tr>
-                <td>Inspeção Visual Externa</td>
-                <td>${equipamento.dataInspecao}</td>
-                <td><a href="#" class="button">Baixar PDF</a></td>
-            </tr>
-        </table>
-    </div>
+        <div class="card">
+            <h3>ART</h3>
+            ${equipamento[14] ? `<a class="button" href="${equipamento[14]}" target="_blank">Baixar ART</a>` : "Não disponível"}
+        </div>
 
-    <div class="card">
-        <h3>ART</h3>
-        <p>Não disponível</p>
-    </div>
-
-    <div class="card">
-        <h3>PRONTUÁRIO NR-13</h3>
-        <p>Não disponível</p>
-    </div>
-`;
+        <div class="card">
+            <h3>PRONTUÁRIO NR-13</h3>
+            ${equipamento[15] ? `<a class="button" href="${equipamento[15]}" target="_blank">Baixar Prontuário</a>` : "Não disponível"}
+        </div>
+    `;
+});
 
 </script>
 
