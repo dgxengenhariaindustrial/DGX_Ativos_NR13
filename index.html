@@ -72,10 +72,14 @@ header h2{
 /* CARD */
 .card{
     background:#ffffff;
-    padding:30px;
+    padding:25px 30px;
     border-radius:10px;
     box-shadow:0 4px 10px rgba(0,0,0,0.05);
-    margin-bottom:30px;
+    margin-bottom:25px;
+}
+
+.card.small{
+    padding:15px 25px;
 }
 
 /* GRID */
@@ -179,7 +183,7 @@ footer{
 
     <div class="header-buttons">
         <button class="btn btn-print" onclick="window.print()">📄 Gerar PDF</button>
-        <button class="btn btn-exit" onclick="history.back()">🚪 Sair</button>
+        <button class="btn btn-exit" onclick="fecharPagina()">🚪 Sair</button>
     </div>
 </header>
 
@@ -191,14 +195,18 @@ footer{
 
 <script>
 
+/* ===== FUNÇÃO FECHAR ===== */
+function fecharPagina(){
+    window.close();
+    history.back();
+}
+
 /* ===== DATA DE GERAÇÃO ===== */
 const agora = new Date();
-const dataGeracao = agora.toLocaleDateString('pt-BR') + 
-                    " - " + 
-                    agora.toLocaleTimeString('pt-BR');
-
 document.getElementById("rodape").innerHTML =
-"Data de geração: " + dataGeracao;
+"Data de geração: " +
+agora.toLocaleDateString('pt-BR') + " - " +
+agora.toLocaleTimeString('pt-BR');
 
 /* ===== PARÂMETRO TAG ===== */
 const urlParams = new URLSearchParams(window.location.search);
@@ -212,7 +220,7 @@ if(!tag){
 /* ===== LINK CSV ===== */
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
-/* ===== FUNÇÃO ROBUSTA PARA LER CSV ===== */
+/* ===== FUNÇÃO ROBUSTA CSV ===== */
 function parseCSV(text){
     const linhas = text.split("\n").map(l => l.replace(/\r/g,""));
     return linhas.map(linha=>{
@@ -259,33 +267,23 @@ fetch(csvUrl)
 
     let relatoriosHTML = "";
 
-    if (equipamento[10])
-        relatoriosHTML += `<tr>
-            <td>Inspeção Visual Externa</td>
-            <td>${equipamento[6]}</td>
-            <td><a class="button" href="${equipamento[10]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
+    const tipos = [
+        {nome:"Inspeção Visual Externa", index:10},
+        {nome:"Inspeção Visual Interna", index:11},
+        {nome:"Medição de Espessura", index:12},
+        {nome:"Teste Hidrostático", index:13}
+    ];
 
-    if (equipamento[11])
-        relatoriosHTML += `<tr>
-            <td>Inspeção Visual Interna</td>
-            <td>${equipamento[6]}</td>
-            <td><a class="button" href="${equipamento[11]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
-
-    if (equipamento[12])
-        relatoriosHTML += `<tr>
-            <td>Medição de Espessura</td>
-            <td>${equipamento[6]}</td>
-            <td><a class="button" href="${equipamento[12]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
-
-    if (equipamento[13])
-        relatoriosHTML += `<tr>
-            <td>Teste Hidrostático</td>
-            <td>${equipamento[6]}</td>
-            <td><a class="button" href="${equipamento[13]}" target="_blank">Baixar PDF</a></td>
-        </tr>`;
+    tipos.forEach(tipo=>{
+        if(equipamento[tipo.index]){
+            relatoriosHTML += `
+            <tr>
+                <td>${tipo.nome}</td>
+                <td>${equipamento[6]}</td>
+                <td><a class="button" href="${equipamento[tipo.index]}" target="_blank">Baixar PDF</a></td>
+            </tr>`;
+        }
+    });
 
     document.getElementById("conteudo").innerHTML = `
         <div class="card equipamento">
@@ -317,13 +315,13 @@ fetch(csvUrl)
             </table>
         </div>
 
-        <div class="card">
-            <h3>ART</h3>
+        <div class="card small">
+            <h3 style="margin:0 0 10px 0;">ART</h3>
             ${equipamento[14] ? `<a class="button" href="${equipamento[14]}" target="_blank">Baixar ART</a>` : "Não disponível"}
         </div>
 
-        <div class="card">
-            <h3>PRONTUÁRIO NR-13</h3>
+        <div class="card small">
+            <h3 style="margin:0 0 10px 0;">PRONTUÁRIO NR-13</h3>
             ${equipamento[15] ? `<a class="button" href="${equipamento[15]}" target="_blank">Baixar Prontuário</a>` : "Não disponível"}
         </div>
     `;
