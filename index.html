@@ -31,17 +31,42 @@ padding:20px;
 
 .card{
 background:white;
-padding:25px;
+padding:20px;
 border-radius:8px;
-margin-bottom:20px;
+margin-bottom:15px;
 box-shadow:0 2px 5px rgba(0,0,0,0.08);
 }
 
+.top-grid{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+}
+
+.right-info{
+text-align:right;
+min-width:220px;
+}
+
+.label{
+margin-top:10px;
+font-size:14px;
+color:#555;
+}
+
+.bigDate{
+font-size:32px;
+font-weight:bold;
+color:#1f3c88;
+margin-top:5px;
+}
+
 .status{
-padding:8px 12px;
+padding:6px 10px;
 border-radius:6px;
 font-weight:bold;
 display:inline-block;
+margin-bottom:5px;
 }
 
 .status.ok{
@@ -79,10 +104,16 @@ text-decoration:none;
 font-size:14px;
 }
 
-.bigDate{
-font-size:30px;
-font-weight:bold;
-color:#1f3c88;
+@media print{
+
+body{
+zoom:90%;
+}
+
+.card{
+page-break-inside:avoid;
+}
+
 }
 
 </style>
@@ -114,19 +145,27 @@ color:#1f3c88;
 
 <div class="card">
 
+<div class="top-grid">
+
+<div>
+
 <h2 id="equipamento"></h2>
 
 <p><b>Categoria NR-13:</b> <span id="categoria"></span></p>
 <p><b>PMTA:</b> <span id="pmta"></span></p>
 <p><b>Fluido:</b> <span id="fluido"></span></p>
 
-<div style="text-align:right">
+</div>
+
+<div class="right-info">
 
 <div id="status"></div>
 
-<p>Próxima inspeção</p>
+<p class="label">Próxima inspeção</p>
 
 <div class="bigDate" id="proxima"></div>
+
+</div>
 
 </div>
 
@@ -180,9 +219,9 @@ function parseDate(d){
 
 if(!d)return null;
 
-const parts=d.split("/");
+const p=d.split("/");
 
-return new Date(parts[2],parts[1]-1,parts[0]);
+return new Date(p[2],p[1]-1,p[0]);
 
 }
 
@@ -300,43 +339,27 @@ statusEl.innerHTML='<span class="status ok">DENTRO DO PRAZO</span>';
 const relatorios=[
 
 {
-
 nome:"Inspeção Visual Externa",
-
 data:eq[idx("DATA - VISUAL EXTERNA")],
-
 link:eq[idx("LINK - VISUAL EXTERNA")]
-
 },
 
 {
-
 nome:"Inspeção Visual Interna",
-
 data:eq[idx("DATA - VISUAL INTERNA")],
-
 link:eq[idx("LINK - VISUAL INTERNA")]
-
 },
 
 {
-
 nome:"Medição de Espessura",
-
 data:eq[idx("DATA - MEDIÇÃO DE ESPESSURA")],
-
 link:eq[idx("LINK - MEDIÇÃO DE ESPESSURA")]
-
 },
 
 {
-
 nome:"Teste Hidrostático",
-
 data:eq[idx("DATA - TESTE HIDROSTÁTICO")],
-
 link:eq[idx("LINK - TESTE HIDROSTÁTICO")]
-
 }
 
 ];
@@ -352,9 +375,7 @@ html+=`
 <tr>
 
 <td>${r.nome}</td>
-
 <td>${r.data||"-"}</td>
-
 <td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
 
 </tr>
