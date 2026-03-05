@@ -1,253 +1,384 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 <title>DGX | Engenharia Industrial</title>
 
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
 <style>
-body { font-family: Arial; background:#f2f4f7; margin:0; }
 
-header {
-    background:white;
-    padding:15px 40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 2px 4px rgba(0,0,0,0.05);
+body{
+font-family:Arial;
+background:#f5f6fa;
+margin:0;
 }
 
-.logo-area { display:flex; align-items:center; gap:15px; }
-.logo-area img { height:45px; }
-h1 { color:#1f3c88; font-size:22px; margin:0; }
-
-.top-buttons { display:flex; gap:10px; }
-
-.button {
-    padding:8px 15px;
-    border-radius:6px;
-    text-decoration:none;
-    font-size:14px;
-    font-weight:bold;
-    color:white;
-    cursor:pointer;
+header{
+background:white;
+padding:15px 30px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+box-shadow:0 2px 4px rgba(0,0,0,0.1);
 }
 
-.btn-blue { background:#1f3c88; }
-.btn-red { background:#d64545; }
-
-.container {
-    max-width:1100px;
-    margin:40px auto;
-    padding:0 20px;
+h1{
+color:#1f3c88;
+font-size:22px;
 }
 
-.card {
-    background:white;
-    padding:18px 25px;
-    border-radius:10px;
-    margin-bottom:20px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
 }
 
-.card-relatorios {
-    padding:30px 25px;
+.card{
+background:white;
+padding:25px;
+border-radius:8px;
+margin-bottom:20px;
+box-shadow:0 2px 5px rgba(0,0,0,0.05);
 }
 
-.status-area { text-align:right; }
-
-.status {
-    padding:10px 16px;
-    border-radius:8px;
-    font-weight:bold;
-    font-size:15px;
-    display:inline-block;
-    margin-bottom:12px;
+.status{
+padding:8px 12px;
+border-radius:6px;
+font-weight:bold;
+display:inline-block;
 }
 
-.status.ok { background:#c8e6c9; color:#2e7d32; }
-.status.bad { background:#ffcdd2; color:#c62828; }
-
-.proxima-label {
-    font-size:14px;
-    color:#555;
+.status.ok{
+background:#d4edda;
+color:#155724;
 }
 
-.proxima-data {
-    font-size:22px;
-    font-weight:bold;
-    color:#1f3c88;
+.status.bad{
+background:#f8d7da;
+color:#721c24;
 }
 
-table { width:100%; border-collapse:collapse; }
-
-th, td {
-    padding:12px;
-    border-bottom:1px solid #ddd;
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
 }
 
-th {
-    background:#e0e0e0;
-    text-align:left;
+th{
+background:#e5e5e5;
+padding:10px;
+text-align:left;
 }
 
-footer {
-    text-align:center;
-    font-size:12px;
-    margin:20px;
-    color:#777;
+td{
+padding:10px;
+border-bottom:1px solid #ddd;
 }
 
-@media print {
-    .btn-blue, .btn-red { display:none; }
-    .card { page-break-inside: avoid; }
+.button{
+background:#2c4c97;
+color:white;
+padding:6px 12px;
+border-radius:6px;
+text-decoration:none;
+font-size:14px;
 }
+
+.right{
+text-align:right;
+}
+
+.bigDate{
+font-size:28px;
+font-weight:bold;
+color:#1f3c88;
+}
+
 </style>
+
 </head>
 
 <body>
 
 <header>
-<div class="logo-area">
-<img src="DGX - ENGENHARIA.png">
+
+<div style="display:flex;align-items:center;gap:15px">
+
+<img src="DGX - ENGENHARIA.png" height="40">
+
 <h1>DGX | Engenharia Industrial</h1>
+
 </div>
 
-<div class="top-buttons">
-<a class="button btn-blue" onclick="window.print()">Gerar PDF</a>
-<a class="button btn-red" onclick="fecharPagina()">Sair</a>
+<div>
+
+<button onclick="window.print()">Gerar PDF</button>
+<button onclick="window.close()">Sair</button>
+
 </div>
+
 </header>
 
 <div class="container">
 
 <div class="card">
-<div style="display:flex; justify-content:space-between;">
-<div>
-<h2 id="tag"></h2>
+
+<h2 id="equipamento"></h2>
+
 <p><b>Categoria NR-13:</b> <span id="categoria"></span></p>
 <p><b>PMTA:</b> <span id="pmta"></span></p>
 <p><b>Fluido:</b> <span id="fluido"></span></p>
+
+<div class="right">
+
+<div id="status"></div>
+
+<p>Próxima inspeção</p>
+
+<div class="bigDate" id="proxima"></div>
+
 </div>
 
-<div class="status-area">
-<div id="statusBox"></div>
-<div class="proxima-label">Próxima inspeção</div>
-<div class="proxima-data" id="proxima"></div>
-</div>
-</div>
 </div>
 
-<div class="card card-relatorios">
+<div class="card">
+
 <h3>RELATÓRIOS</h3>
+
 <table>
-<thead>
+
 <tr>
+
 <th>Tipo</th>
+<th>Última inspeção</th>
 <th>Visualizar</th>
+
 </tr>
-</thead>
+
 <tbody id="relatorios"></tbody>
+
 </table>
+
 </div>
 
 <div class="card">
+
 <h3>ART</h3>
+
 <div id="art"></div>
+
 </div>
 
 <div class="card">
+
 <h3>PRONTUÁRIO NR-13</h3>
+
 <div id="prontuario"></div>
-</div>
 
 </div>
 
-<footer>
-Página gerada automaticamente em <span id="dataGeracao"></span>
-</footer>
+</div>
 
 <script>
 
-function fecharPagina(){
-    window.open('', '_self');
-    window.close();
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+
+const tag = new URLSearchParams(window.location.search).get("tag");
+
+function parseDate(d){
+
+if(!d)return null;
+
+const parts=d.split("/");
+
+return new Date(parts[2],parts[1]-1,parts[0]);
+
 }
 
-const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+function addMonths(date,months){
 
-const params = new URLSearchParams(window.location.search);
-const tagURL = params.get("tag");
+const d=new Date(date);
 
-Papa.parse(csvURL, {
-download: true,
-header: true,
-skipEmptyLines: true,
-complete: function(results) {
+d.setMonth(d.getMonth()+months);
 
-const dados = results.data;
-const equipamento = dados.find(e => e["TAG EQUIPAMENTO"] === tagURL);
+return d;
 
-if(!equipamento) return;
-
-document.getElementById("tag").innerText = "Equipamento: " + tagURL;
-document.getElementById("categoria").innerText = equipamento["CATEGORIA NR-13"];
-document.getElementById("pmta").innerText = equipamento["PMTA (bar)"];
-document.getElementById("fluido").innerText = equipamento["FLUIDO"];
-document.getElementById("proxima").innerText = equipamento["PRÓXIMA INSPEÇÃO"];
-
-const status = equipamento["STATUS"];
-
-if(status === "DENTRO DO PRAZO"){
-document.getElementById("statusBox").innerHTML =
-`<div class="status ok">${status}</div>`;
-} else {
-document.getElementById("statusBox").innerHTML =
-`<div class="status bad">${status}</div>`;
 }
 
-const relatorios = [
-["Inspeção Visual Externa","LINK - VISUAL EXTERNA"],
-["Inspeção Visual Interna","LINK - VISUAL INTERNA"],
-["Medição de Espessura","LINK - MEDIÇÃO DE ESPESSURA"],
-["Teste Hidrostático","LINK - TESTE HIDROSTÁTICO"]
+function formatDate(date){
+
+return date.toLocaleDateString("pt-BR");
+
+}
+
+function getPrazo(cat,tipo){
+
+const tabela={
+
+"I":{ext:12,int:36},
+
+"II":{ext:24,int:48},
+
+"III":{ext:36,int:72},
+
+"IV":{ext:48,int:96},
+
+"V":{ext:60,int:120}
+
+};
+
+return tabela[cat]?.[tipo];
+
+}
+
+fetch(urlCSV)
+
+.then(r=>r.text())
+
+.then(text=>{
+
+const linhas=text.split("\n").map(l=>l.split(","));
+
+const header=linhas[0];
+
+const dados=linhas.slice(1);
+
+const idx=(name)=>header.indexOf(name);
+
+const equipamento=dados.find(l=>l[idx("TAG EQUIPAMENTO")]===tag);
+
+if(!equipamento)return;
+
+document.getElementById("equipamento").innerText="Equipamento: "+equipamento[idx("TAG EQUIPAMENTO")];
+
+document.getElementById("categoria").innerText=equipamento[idx("CATEGORIA NR-13")];
+
+document.getElementById("pmta").innerText=equipamento[idx("PMTA (bar)")]+" bar";
+
+document.getElementById("fluido").innerText=equipamento[idx("FLUIDO")];
+
+const categoria=equipamento[idx("CATEGORIA NR-13")];
+
+const dataExt=parseDate(equipamento[idx("DATA - VISUAL EXTERNA")]);
+
+const dataInt=parseDate(equipamento[idx("DATA - VISUAL INTERNA")]);
+
+let proximas=[];
+
+if(dataExt){
+
+const prazo=getPrazo(categoria,"ext");
+
+proximas.push(addMonths(dataExt,prazo));
+
+}
+
+if(dataInt){
+
+const prazo=getPrazo(categoria,"int");
+
+proximas.push(addMonths(dataInt,prazo));
+
+}
+
+const proxima=proximas.sort((a,b)=>a-b)[0];
+
+document.getElementById("proxima").innerText=formatDate(proxima);
+
+const hoje=new Date();
+
+const statusEl=document.getElementById("status");
+
+if(proxima<hoje){
+
+statusEl.innerHTML='<span class="status bad">VENCIDA</span>';
+
+}else{
+
+statusEl.innerHTML='<span class="status ok">DENTRO DO PRAZO</span>';
+
+}
+
+const relatorios=[
+
+{
+
+nome:"Inspeção Visual Externa",
+
+data:equipamento[idx("DATA - VISUAL EXTERNA")],
+
+link:equipamento[idx("LINK - VISUAL EXTERNA")]
+
+},
+
+{
+
+nome:"Inspeção Visual Interna",
+
+data:equipamento[idx("DATA - VISUAL INTERNA")],
+
+link:equipamento[idx("LINK - VISUAL INTERNA")]
+
+},
+
+{
+
+nome:"Medição de Espessura",
+
+data:equipamento[idx("DATA - MEDIÇÃO DE ESPESSURA")],
+
+link:equipamento[idx("LINK - MEDIÇÃO DE ESPESSURA")]
+
+},
+
+{
+
+nome:"Teste Hidrostático",
+
+data:equipamento[idx("DATA - TESTE HIDROSTÁTICO")],
+
+link:equipamento[idx("LINK - TESTE HIDROSTÁTICO")]
+
+}
+
 ];
 
-const tabela = document.getElementById("relatorios");
+let html="";
 
 relatorios.forEach(r=>{
-if(equipamento[r[1]]){
-let link = equipamento[r[1]].replace("/view","/preview");
-tabela.innerHTML += `
-<tr>
-<td>${r[0]}</td>
-<td><a class="button btn-blue" href="${link}" target="_blank">Visualizar</a></td>
+
+if(r.link){
+
+html+=`<tr>
+
+<td>${r.nome}</td>
+
+<td>${r.data||"-"}</td>
+
+<td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
+
 </tr>`;
+
 }
+
 });
 
-if(equipamento["LINK - ART"]){
-let artLink = equipamento["LINK - ART"].replace("/view","/preview");
-document.getElementById("art").innerHTML =
-`<a class="button btn-blue" href="${artLink}" target="_blank">Visualizar ART</a>`;
-}else{
-document.getElementById("art").innerText = "Não disponível";
-}
+document.getElementById("relatorios").innerHTML=html;
 
-if(equipamento["LINK - PRONTUÁRIO"]){
-let prontLink = equipamento["LINK - PRONTUÁRIO"].replace("/view","/preview");
-document.getElementById("prontuario").innerHTML =
-`<a class="button btn-blue" href="${prontLink}" target="_blank">Visualizar Prontuário</a>`;
-}else{
-document.getElementById("prontuario").innerText = "Não disponível";
-}
+const art=equipamento[idx("LINK - ART")];
 
-}
+document.getElementById("art").innerHTML=
+
+art?`<a class="button" href="${art}" target="_blank">Visualizar ART</a>`:"Não disponível";
+
+const pront=equipamento[idx("LINK - PRONTUÁRIO")];
+
+document.getElementById("prontuario").innerHTML=
+
+pront?`<a class="button" href="${pront}" target="_blank">Visualizar Prontuário</a>`:"Não disponível";
+
 });
-
-document.getElementById("dataGeracao").innerText =
-new Date().toLocaleString("pt-BR");
 
 </script>
 
