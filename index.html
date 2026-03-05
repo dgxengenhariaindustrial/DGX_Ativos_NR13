@@ -10,7 +10,7 @@
 
 body{
 font-family:Arial;
-background:#f5f6fa;
+background:#f4f6f9;
 margin:0;
 }
 
@@ -18,14 +18,9 @@ header{
 background:white;
 padding:15px 30px;
 display:flex;
-align-items:center;
 justify-content:space-between;
+align-items:center;
 box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
-
-h1{
-color:#1f3c88;
-font-size:22px;
 }
 
 .container{
@@ -39,7 +34,7 @@ background:white;
 padding:25px;
 border-radius:8px;
 margin-bottom:20px;
-box-shadow:0 2px 5px rgba(0,0,0,0.05);
+box-shadow:0 2px 5px rgba(0,0,0,0.08);
 }
 
 .status{
@@ -62,7 +57,6 @@ color:#721c24;
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
 }
 
 th{
@@ -85,12 +79,8 @@ text-decoration:none;
 font-size:14px;
 }
 
-.right{
-text-align:right;
-}
-
 .bigDate{
-font-size:28px;
+font-size:30px;
 font-weight:bold;
 color:#1f3c88;
 }
@@ -107,7 +97,7 @@ color:#1f3c88;
 
 <img src="DGX - ENGENHARIA.png" height="40">
 
-<h1>DGX | Engenharia Industrial</h1>
+<h2 style="color:#1f3c88">DGX | Engenharia Industrial</h2>
 
 </div>
 
@@ -130,7 +120,7 @@ color:#1f3c88;
 <p><b>PMTA:</b> <span id="pmta"></span></p>
 <p><b>Fluido:</b> <span id="fluido"></span></p>
 
-<div class="right">
+<div style="text-align:right">
 
 <div id="status"></div>
 
@@ -182,9 +172,9 @@ color:#1f3c88;
 
 <script>
 
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+const csvURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
-const tag = new URLSearchParams(window.location.search).get("tag");
+const tag=new URLSearchParams(window.location.search).get("tag");
 
 function parseDate(d){
 
@@ -212,85 +202,92 @@ return date.toLocaleDateString("pt-BR");
 
 }
 
-function getPrazo(cat,tipo){
+function prazoNR13(cat){
 
 const tabela={
 
 "I":{ext:12,int:36},
-
 "II":{ext:24,int:48},
-
 "III":{ext:36,int:72},
-
 "IV":{ext:48,int:96},
-
 "V":{ext:60,int:120}
 
 };
 
-return tabela[cat]?.[tipo];
+return tabela[cat];
 
 }
 
-fetch(urlCSV)
+function parseCSV(text){
+
+const linhas=text.trim().split("\n");
+
+return linhas.map(l=>{
+
+const regex=/(".*?"|[^",]+)(?=\s*,|\s*$)/g;
+
+return l.match(regex).map(v=>v.replace(/^"|"$/g,""));
+
+});
+
+}
+
+fetch(csvURL)
 
 .then(r=>r.text())
 
 .then(text=>{
 
-const linhas=text.split("\n").map(l=>l.split(","));
+const linhas=parseCSV(text);
 
 const header=linhas[0];
 
 const dados=linhas.slice(1);
 
-const idx=(name)=>header.indexOf(name);
+const idx=(col)=>header.indexOf(col);
 
-const equipamento=dados.find(l=>l[idx("TAG EQUIPAMENTO")]===tag);
+const eq=dados.find(l=>l[idx("TAG EQUIPAMENTO")]===tag);
 
-if(!equipamento)return;
+if(!eq)return;
 
-document.getElementById("equipamento").innerText="Equipamento: "+equipamento[idx("TAG EQUIPAMENTO")];
+document.getElementById("equipamento").innerText="Equipamento: "+eq[idx("TAG EQUIPAMENTO")];
 
-document.getElementById("categoria").innerText=equipamento[idx("CATEGORIA NR-13")];
+document.getElementById("categoria").innerText=eq[idx("CATEGORIA NR-13")];
 
-document.getElementById("pmta").innerText=equipamento[idx("PMTA (bar)")]+" bar";
+document.getElementById("pmta").innerText=eq[idx("PMTA (bar)")]+" bar";
 
-document.getElementById("fluido").innerText=equipamento[idx("FLUIDO")];
+document.getElementById("fluido").innerText=eq[idx("FLUIDO")];
 
-const categoria=equipamento[idx("CATEGORIA NR-13")];
+const cat=eq[idx("CATEGORIA NR-13")];
 
-const dataExt=parseDate(equipamento[idx("DATA - VISUAL EXTERNA")]);
+const prazo=prazoNR13(cat);
 
-const dataInt=parseDate(equipamento[idx("DATA - VISUAL INTERNA")]);
+const dataExt=parseDate(eq[idx("DATA - VISUAL EXTERNA")]);
+const dataInt=parseDate(eq[idx("DATA - VISUAL INTERNA")]);
 
 let proximas=[];
 
-if(dataExt){
+if(dataExt && prazo?.ext){
 
-const prazo=getPrazo(categoria,"ext");
-
-proximas.push(addMonths(dataExt,prazo));
+proximas.push(addMonths(dataExt,prazo.ext));
 
 }
 
-if(dataInt){
+if(dataInt && prazo?.int){
 
-const prazo=getPrazo(categoria,"int");
-
-proximas.push(addMonths(dataInt,prazo));
+proximas.push(addMonths(dataInt,prazo.int));
 
 }
 
 const proxima=proximas.sort((a,b)=>a-b)[0];
 
-document.getElementById("proxima").innerText=formatDate(proxima);
+document.getElementById("proxima").innerText=proxima?formatDate(proxima):"-";
 
 const hoje=new Date();
 
 const statusEl=document.getElementById("status");
 
-if(proxima<hoje){
+if(proxima && proxima<hoje){
 
 statusEl.innerHTML='<span class="status bad">VENCIDA</span>';
 
@@ -306,9 +303,9 @@ const relatorios=[
 
 nome:"Inspeção Visual Externa",
 
-data:equipamento[idx("DATA - VISUAL EXTERNA")],
+data:eq[idx("DATA - VISUAL EXTERNA")],
 
-link:equipamento[idx("LINK - VISUAL EXTERNA")]
+link:eq[idx("LINK - VISUAL EXTERNA")]
 
 },
 
@@ -316,9 +313,9 @@ link:equipamento[idx("LINK - VISUAL EXTERNA")]
 
 nome:"Inspeção Visual Interna",
 
-data:equipamento[idx("DATA - VISUAL INTERNA")],
+data:eq[idx("DATA - VISUAL INTERNA")],
 
-link:equipamento[idx("LINK - VISUAL INTERNA")]
+link:eq[idx("LINK - VISUAL INTERNA")]
 
 },
 
@@ -326,9 +323,9 @@ link:equipamento[idx("LINK - VISUAL INTERNA")]
 
 nome:"Medição de Espessura",
 
-data:equipamento[idx("DATA - MEDIÇÃO DE ESPESSURA")],
+data:eq[idx("DATA - MEDIÇÃO DE ESPESSURA")],
 
-link:equipamento[idx("LINK - MEDIÇÃO DE ESPESSURA")]
+link:eq[idx("LINK - MEDIÇÃO DE ESPESSURA")]
 
 },
 
@@ -336,9 +333,9 @@ link:equipamento[idx("LINK - MEDIÇÃO DE ESPESSURA")]
 
 nome:"Teste Hidrostático",
 
-data:equipamento[idx("DATA - TESTE HIDROSTÁTICO")],
+data:eq[idx("DATA - TESTE HIDROSTÁTICO")],
 
-link:equipamento[idx("LINK - TESTE HIDROSTÁTICO")]
+link:eq[idx("LINK - TESTE HIDROSTÁTICO")]
 
 }
 
@@ -350,7 +347,9 @@ relatorios.forEach(r=>{
 
 if(r.link){
 
-html+=`<tr>
+html+=`
+
+<tr>
 
 <td>${r.nome}</td>
 
@@ -358,7 +357,9 @@ html+=`<tr>
 
 <td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
 
-</tr>`;
+</tr>
+
+`;
 
 }
 
@@ -366,13 +367,13 @@ html+=`<tr>
 
 document.getElementById("relatorios").innerHTML=html;
 
-const art=equipamento[idx("LINK - ART")];
+const art=eq[idx("LINK - ART")];
 
 document.getElementById("art").innerHTML=
 
 art?`<a class="button" href="${art}" target="_blank">Visualizar ART</a>`:"Não disponível";
 
-const pront=equipamento[idx("LINK - PRONTUÁRIO")];
+const pront=eq[idx("LINK - PRONTUÁRIO")];
 
 document.getElementById("prontuario").innerHTML=
 
