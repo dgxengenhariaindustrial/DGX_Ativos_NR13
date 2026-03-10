@@ -256,25 +256,38 @@ fetch(csvURL)
 .then(text=>{
 
 const linhas=parseCSV(text);
+
 const header=linhas[0];
 const dados=linhas.slice(1);
 
-const idx=(col)=>header.indexOf(col);
-
-const eq=dados.find(l=>l[idx("TAG EQUIPAMENTO")]===tag);
+const eq=dados.find(l=>l[0]===tag);
 
 if(!eq) return;
 
-document.getElementById("equipamento").innerText="Equipamento: "+eq[idx("TAG EQUIPAMENTO")];
-document.getElementById("categoria").innerText=eq[idx("CATEGORIA NR-13")];
-document.getElementById("pmta").innerText=eq[idx("PMTA (bar)")]+" bar";
-document.getElementById("fluido").innerText=eq[idx("FLUIDO")];
+function get(col){
+const i = header.findIndex(h => h.trim() === col.trim());
+return eq[i] || "";
+}
 
-const cat=eq[idx("CATEGORIA NR-13")];
+/* dados equipamento */
+
+document.getElementById("equipamento").innerText="Equipamento: "+get("TAG EQUIPAMENTO");
+
+document.getElementById("categoria").innerText=get("CATEGORIA NR-13");
+
+document.getElementById("pmta").innerText=get("PMTA (bar)")+" bar";
+
+document.getElementById("fluido").innerText=get("FLUIDO");
+
+/* cálculo inspeção */
+
+const cat=get("CATEGORIA NR-13");
+
 const prazo=prazoNR13(cat);
 
-const dataExt=parseDate(eq[idx("DATA - VISUAL EXTERNA")]);
-const dataInt=parseDate(eq[idx("DATA - VISUAL INTERNA")]);
+const dataExt=parseDate(get("DATA - VISUAL EXTERNA"));
+
+const dataInt=parseDate(get("DATA - VISUAL INTERNA"));
 
 let proximas=[];
 
@@ -290,39 +303,48 @@ const proxima=proximas.length>0 ? proximas.sort((a,b)=>a-b)[0] : null;
 
 document.getElementById("proxima").innerText = proxima ? formatDate(proxima) : "-";
 
+/* status */
+
 const hoje=new Date();
+
 const statusEl=document.getElementById("status");
 
 if(proxima && proxima < hoje){
+
 statusEl.innerHTML='<span class="status bad">VENCIDA</span>';
+
 }else{
+
 statusEl.innerHTML='<span class="status ok">DENTRO DO PRAZO</span>';
+
 }
+
+/* relatórios */
 
 const relatorios=[
 
 {
 nome:"Inspeção Visual Externa",
-data:eq[idx("DATA - VISUAL EXTERNA")],
-link:eq[idx("LINK - VISUAL EXTERNA")]
+data:get("DATA - VISUAL EXTERNA"),
+link:get("LINK - VISUAL EXTERNA")
 },
 
 {
 nome:"Inspeção Visual Interna",
-data:eq[idx("DATA - VISUAL INTERNA")],
-link:eq[idx("LINK - VISUAL INTERNA")]
+data:get("DATA - VISUAL INTERNA"),
+link:get("LINK - VISUAL INTERNA")
 },
 
 {
 nome:"Medição de Espessura",
-data:eq[idx("DATA - MEDIÇÃO DE ESPESSURA")],
-link:eq[idx("LINK - MEDIÇÃO DE ESPESSURA")]
+data:get("DATA - MEDIÇÃO DE ESPESSURA"),
+link:get("LINK - MEDIÇÃO DE ESPESSURA")
 },
 
 {
 nome:"Teste Hidrostático",
-data:eq[idx("DATA - TESTE HIDROSTÁTICO")],
-link:eq[idx("LINK - TESTE HIDROSTÁTICO")]
+data:get("DATA - TESTE HIDROSTÁTICO"),
+link:get("LINK - TESTE HIDROSTÁTICO")
 }
 
 ];
@@ -347,15 +369,21 @@ html+=`
 
 document.getElementById("relatorios").innerHTML=html;
 
-const art=eq[idx("LINK - ART")];
+/* art */
 
-document.getElementById("art").innerHTML = (art && art.trim()!="")
+const art=get("LINK - ART");
+
+document.getElementById("art").innerHTML =
+(art && art.trim()!="")
 ? `<a class="button" href="${art}" target="_blank">Visualizar ART</a>`
 : "Não disponível";
 
-const pront=eq[idx("LINK - PRONTUÁRIO")];
+/* prontuário */
 
-document.getElementById("prontuario").innerHTML = (pront && pront.trim()!="")
+const pront=get("LINK - PRONTUÁRIO");
+
+document.getElementById("prontuario").innerHTML =
+(pront && pront.trim()!="")
 ? `<a class="button" href="${pront}" target="_blank">Visualizar Prontuário</a>`
 : "Não disponível";
 
