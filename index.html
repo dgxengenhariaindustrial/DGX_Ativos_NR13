@@ -178,11 +178,9 @@ page-break-inside:avoid;
 <table>
 
 <tr>
-
 <th>Tipo</th>
 <th>Última inspeção</th>
 <th>Visualizar</th>
-
 </tr>
 
 <tbody id="relatorios"></tbody>
@@ -194,7 +192,6 @@ page-break-inside:avoid;
 <div class="card">
 
 <h3>ART</h3>
-
 <div id="art"></div>
 
 </div>
@@ -202,7 +199,6 @@ page-break-inside:avoid;
 <div class="card">
 
 <h3>PRONTUÁRIO NR-13</h3>
-
 <div id="prontuario"></div>
 
 </div>
@@ -216,45 +212,32 @@ const csvURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0
 const tag=new URLSearchParams(window.location.search).get("tag");
 
 function parseDate(d){
-
-if(!d)return null;
-
+if(!d || d=="") return null;
 const p=d.split("/");
-
 return new Date(p[2],p[1]-1,p[0]);
-
 }
 
 function addMonths(date,months){
-
 const d=new Date(date);
-
 d.setMonth(d.getMonth()+months);
-
 return d;
-
 }
 
 function formatDate(date){
-
 return date.toLocaleDateString("pt-BR");
-
 }
 
 function prazoNR13(cat){
 
 const tabela={
-
 "I":{ext:12,int:36},
 "II":{ext:24,int:48},
 "III":{ext:36,int:72},
 "IV":{ext:48,int:96},
 "V":{ext:60,int:120}
-
 };
 
 return tabela[cat];
-
 }
 
 function parseCSV(text){
@@ -262,43 +245,32 @@ function parseCSV(text){
 const linhas=text.trim().split("\n");
 
 return linhas.map(l=>{
-
 const regex=/(".*?"|[^",]+)(?=\s*,|\s*$)/g;
-
 return l.match(regex).map(v=>v.replace(/^"|"$/g,""));
-
 });
 
 }
 
 fetch(csvURL)
-
 .then(r=>r.text())
-
 .then(text=>{
 
 const linhas=parseCSV(text);
-
 const header=linhas[0];
-
 const dados=linhas.slice(1);
 
 const idx=(col)=>header.indexOf(col);
 
 const eq=dados.find(l=>l[idx("TAG EQUIPAMENTO")]===tag);
 
-if(!eq)return;
+if(!eq) return;
 
 document.getElementById("equipamento").innerText="Equipamento: "+eq[idx("TAG EQUIPAMENTO")];
-
 document.getElementById("categoria").innerText=eq[idx("CATEGORIA NR-13")];
-
 document.getElementById("pmta").innerText=eq[idx("PMTA (bar)")]+" bar";
-
 document.getElementById("fluido").innerText=eq[idx("FLUIDO")];
 
 const cat=eq[idx("CATEGORIA NR-13")];
-
 const prazo=prazoNR13(cat);
 
 const dataExt=parseDate(eq[idx("DATA - VISUAL EXTERNA")]);
@@ -307,33 +279,24 @@ const dataInt=parseDate(eq[idx("DATA - VISUAL INTERNA")]);
 let proximas=[];
 
 if(dataExt && prazo?.ext){
-
 proximas.push(addMonths(dataExt,prazo.ext));
-
 }
 
 if(dataInt && prazo?.int){
-
 proximas.push(addMonths(dataInt,prazo.int));
-
 }
 
-const proxima=proximas.sort((a,b)=>a-b)[0];
+const proxima=proximas.length>0 ? proximas.sort((a,b)=>a-b)[0] : null;
 
-document.getElementById("proxima").innerText=proxima?formatDate(proxima):"-";
+document.getElementById("proxima").innerText = proxima ? formatDate(proxima) : "-";
 
 const hoje=new Date();
-
 const statusEl=document.getElementById("status");
 
-if(proxima && proxima<hoje){
-
+if(proxima && proxima < hoje){
 statusEl.innerHTML='<span class="status bad">VENCIDA</span>';
-
 }else{
-
 statusEl.innerHTML='<span class="status ok">DENTRO DO PRAZO</span>';
-
 }
 
 const relatorios=[
@@ -368,18 +331,14 @@ let html="";
 
 relatorios.forEach(r=>{
 
-if(r.link){
+if(r.link && r.link.trim()!=""){
 
 html+=`
-
 <tr>
-
 <td>${r.nome}</td>
-<td>${r.data||"-"}</td>
+<td>${r.data || "-"}</td>
 <td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
-
 </tr>
-
 `;
 
 }
@@ -390,15 +349,15 @@ document.getElementById("relatorios").innerHTML=html;
 
 const art=eq[idx("LINK - ART")];
 
-document.getElementById("art").innerHTML=
-
-art?`<a class="button" href="${art}" target="_blank">Visualizar ART</a>`:"Não disponível";
+document.getElementById("art").innerHTML = (art && art.trim()!="")
+? `<a class="button" href="${art}" target="_blank">Visualizar ART</a>`
+: "Não disponível";
 
 const pront=eq[idx("LINK - PRONTUÁRIO")];
 
-document.getElementById("prontuario").innerHTML=
-
-pront?`<a class="button" href="${pront}" target="_blank">Visualizar Prontuário</a>`:"Não disponível";
+document.getElementById("prontuario").innerHTML = (pront && pront.trim()!="")
+? `<a class="button" href="${pront}" target="_blank">Visualizar Prontuário</a>`
+: "Não disponível";
 
 });
 
