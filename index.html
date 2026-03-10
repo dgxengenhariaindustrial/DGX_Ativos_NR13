@@ -1,230 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-
-<meta charset="UTF-8">
-<title>DGX | Engenharia Industrial</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#f4f6f9;
-margin:0;
-}
-
-header{
-background:white;
-padding:15px 30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:8px;
-margin-bottom:15px;
-box-shadow:0 2px 5px rgba(0,0,0,0.08);
-}
-
-.top-grid{
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-}
-
-.right-info{
-text-align:right;
-min-width:220px;
-}
-
-.label{
-margin-top:10px;
-font-size:14px;
-color:#555;
-}
-
-.bigDate{
-font-size:32px;
-font-weight:bold;
-color:#1f3c88;
-margin-top:5px;
-}
-
-.status{
-padding:6px 10px;
-border-radius:6px;
-font-weight:bold;
-display:inline-block;
-margin-bottom:5px;
-}
-
-.status.ok{
-background:#d4edda;
-color:#155724;
-}
-
-.status.bad{
-background:#f8d7da;
-color:#721c24;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th{
-background:#e5e5e5;
-padding:10px;
-text-align:left;
-}
-
-td{
-padding:10px;
-border-bottom:1px solid #ddd;
-}
-
-.button{
-background:#2c4c97;
-color:white;
-padding:6px 12px;
-border-radius:6px;
-text-decoration:none;
-font-size:14px;
-}
-
-@media print{
-
-body{
-zoom:90%;
-}
-
-.card{
-page-break-inside:avoid;
-}
-
-}
-
-</style>
-
-</head>
-
-<body>
-
-<header>
-
-<div style="display:flex;align-items:center;gap:15px">
-
-<img src="DGX - ENGENHARIA.png" height="40">
-
-<h2 style="color:#1f3c88">DGX | Engenharia Industrial</h2>
-
-</div>
-
-<div>
-
-<button onclick="window.print()">Gerar PDF</button>
-<button onclick="window.close()">Sair</button>
-
-</div>
-
-</header>
-
-<div class="container">
-
-<div class="card">
-
-<div class="top-grid">
-
-<div>
-
-<h2 id="equipamento"></h2>
-
-<p><b>Categoria NR-13:</b> <span id="categoria"></span></p>
-<p><b>PMTA:</b> <span id="pmta"></span></p>
-<p><b>Fluido:</b> <span id="fluido"></span></p>
-
-</div>
-
-<div class="right-info">
-
-<div id="status"></div>
-
-<p class="label">Próxima inspeção</p>
-
-<div class="bigDate" id="proxima"></div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h3>RELATÓRIOS</h3>
-
-<table>
-
-<tr>
-<th>Tipo</th>
-<th>Última inspeção</th>
-<th>Visualizar</th>
-</tr>
-
-<tbody id="relatorios"></tbody>
-
-</table>
-
-</div>
-
-<div class="card">
-
-<h3>ART</h3>
-<div id="art"></div>
-
-</div>
-
-<div class="card">
-
-<h3>PRONTUÁRIO NR-13</h3>
-<div id="prontuario"></div>
-
-</div>
-
-</div>
-
 <script>
 
 const csvURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
-const tag=new URLSearchParams(window.location.search).get("tag");
+const tag = new URLSearchParams(window.location.search).get("tag");
 
 function parseDate(d){
-if(!d || d=="") return null;
-const p=d.split("/");
-return new Date(p[2],p[1]-1,p[0]);
+if(!d) return null
+const p = d.split("/")
+return new Date(p[2],p[1]-1,p[0])
 }
 
 function addMonths(date,months){
-const d=new Date(date);
-d.setMonth(d.getMonth()+months);
-return d;
-}
-
-function formatDate(date){
-return date.toLocaleDateString("pt-BR");
+const d = new Date(date)
+d.setMonth(d.getMonth()+months)
+return d
 }
 
 function prazoNR13(cat){
@@ -235,125 +24,123 @@ const tabela={
 "III":{ext:36,int:72},
 "IV":{ext:48,int:96},
 "V":{ext:60,int:120}
-};
-
-return tabela[cat];
 }
 
-function parseCSV(text){
-
-const linhas=text.trim().split("\n");
-
-return linhas.map(l=>{
-const regex=/(".*?"|[^",]+)(?=\s*,|\s*$)/g;
-return l.match(regex).map(v=>v.replace(/^"|"$/g,""));
-});
+return tabela[cat]
 
 }
 
 fetch(csvURL)
+
 .then(r=>r.text())
+
 .then(text=>{
 
-const linhas=parseCSV(text);
+const linhas = text.split("\n").map(l=>l.split(","))
 
-const header=linhas[0];
-const dados=linhas.slice(1);
+const header = linhas[0].map(h=>h.trim())
 
-const eq=dados.find(l=>l[0]===tag);
+const dados = linhas.slice(1)
 
-if(!eq) return;
+let equipamento = null
 
-function get(col){
-const i = header.findIndex(h => h.trim() === col.trim());
-return eq[i] || "";
+dados.forEach(linha=>{
+
+let obj={}
+
+header.forEach((h,i)=>{
+
+obj[h]=linha[i]
+
+})
+
+if(obj["TAG EQUIPAMENTO"]===tag){
+
+equipamento=obj
+
 }
 
-/* dados equipamento */
+})
 
-document.getElementById("equipamento").innerText="Equipamento: "+get("TAG EQUIPAMENTO");
+if(!equipamento) return
 
-document.getElementById("categoria").innerText=get("CATEGORIA NR-13");
+/* DADOS */
 
-document.getElementById("pmta").innerText=get("PMTA (bar)")+" bar";
+document.getElementById("equipamento").innerText="Equipamento: "+equipamento["TAG EQUIPAMENTO"]
 
-document.getElementById("fluido").innerText=get("FLUIDO");
+document.getElementById("categoria").innerText=equipamento["CATEGORIA NR-13"]
 
-/* cálculo inspeção */
+document.getElementById("pmta").innerText=equipamento["PMTA (bar)"]+" bar"
 
-const cat=get("CATEGORIA NR-13");
+document.getElementById("fluido").innerText=equipamento["FLUIDO"]
 
-const prazo=prazoNR13(cat);
+/* PRAZOS */
 
-const dataExt=parseDate(get("DATA - VISUAL EXTERNA"));
+const prazo = prazoNR13(equipamento["CATEGORIA NR-13"])
 
-const dataInt=parseDate(get("DATA - VISUAL INTERNA"));
+const dataExt = parseDate(equipamento["DATA - VISUAL EXTERNA"])
 
-let proximas=[];
+const dataInt = parseDate(equipamento["DATA - VISUAL INTERNA"])
 
-if(dataExt && prazo?.ext){
-proximas.push(addMonths(dataExt,prazo.ext));
-}
+let proximas=[]
 
-if(dataInt && prazo?.int){
-proximas.push(addMonths(dataInt,prazo.int));
-}
+if(dataExt && prazo?.ext) proximas.push(addMonths(dataExt,prazo.ext))
 
-const proxima=proximas.length>0 ? proximas.sort((a,b)=>a-b)[0] : null;
+if(dataInt && prazo?.int) proximas.push(addMonths(dataInt,prazo.int))
 
-document.getElementById("proxima").innerText = proxima ? formatDate(proxima) : "-";
+const proxima = proximas.length ? proximas.sort((a,b)=>a-b)[0] : null
 
-/* status */
+document.getElementById("proxima").innerText = proxima ? proxima.toLocaleDateString("pt-BR") : "-"
 
-const hoje=new Date();
+/* STATUS */
 
-const statusEl=document.getElementById("status");
+const hoje=new Date()
 
-if(proxima && proxima < hoje){
+if(proxima && proxima<hoje){
 
-statusEl.innerHTML='<span class="status bad">VENCIDA</span>';
+document.getElementById("status").innerHTML='<span class="status bad">VENCIDA</span>'
 
 }else{
 
-statusEl.innerHTML='<span class="status ok">DENTRO DO PRAZO</span>';
+document.getElementById("status").innerHTML='<span class="status ok">DENTRO DO PRAZO</span>'
 
 }
 
-/* relatórios */
+/* RELATÓRIOS */
 
 const relatorios=[
 
 {
 nome:"Inspeção Visual Externa",
-data:get("DATA - VISUAL EXTERNA"),
-link:get("LINK - VISUAL EXTERNA")
+data:equipamento["DATA - VISUAL EXTERNA"],
+link:equipamento["LINK - VISUAL EXTERNA"]
 },
 
 {
 nome:"Inspeção Visual Interna",
-data:get("DATA - VISUAL INTERNA"),
-link:get("LINK - VISUAL INTERNA")
+data:equipamento["DATA - VISUAL INTERNA"],
+link:equipamento["LINK - VISUAL INTERNA"]
 },
 
 {
 nome:"Medição de Espessura",
-data:get("DATA - MEDIÇÃO DE ESPESSURA"),
-link:get("LINK - MEDIÇÃO DE ESPESSURA")
+data:equipamento["DATA - MEDIÇÃO DE ESPESSURA"],
+link:equipamento["LINK - MEDIÇÃO DE ESPESSURA"]
 },
 
 {
 nome:"Teste Hidrostático",
-data:get("DATA - TESTE HIDROSTÁTICO"),
-link:get("LINK - TESTE HIDROSTÁTICO")
+data:equipamento["DATA - TESTE HIDROSTÁTICO"],
+link:equipamento["LINK - TESTE HIDROSTÁTICO"]
 }
 
-];
+]
 
-let html="";
+let html=""
 
 relatorios.forEach(r=>{
 
-if(r.link && r.link.trim()!=""){
+if(r.link){
 
 html+=`
 <tr>
@@ -361,35 +148,38 @@ html+=`
 <td>${r.data || "-"}</td>
 <td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
 </tr>
-`;
+`
 
 }
 
-});
+})
 
-document.getElementById("relatorios").innerHTML=html;
+document.getElementById("relatorios").innerHTML=html
 
-/* art */
+/* ART */
 
-const art=get("LINK - ART");
+if(equipamento["LINK - ART"]){
 
-document.getElementById("art").innerHTML =
-(art && art.trim()!="")
-? `<a class="button" href="${art}" target="_blank">Visualizar ART</a>`
-: "Não disponível";
+document.getElementById("art").innerHTML=`<a class="button" href="${equipamento["LINK - ART"]}" target="_blank">Visualizar ART</a>`
 
-/* prontuário */
+}else{
 
-const pront=get("LINK - PRONTUÁRIO");
+document.getElementById("art").innerText="Não disponível"
 
-document.getElementById("prontuario").innerHTML =
-(pront && pront.trim()!="")
-? `<a class="button" href="${pront}" target="_blank">Visualizar Prontuário</a>`
-: "Não disponível";
+}
 
-});
+/* PRONTUÁRIO */
+
+if(equipamento["LINK - PRONTUÁRIO"]){
+
+document.getElementById("prontuario").innerHTML=`<a class="button" href="${equipamento["LINK - PRONTUÁRIO"]}" target="_blank">Visualizar Prontuário</a>`
+
+}else{
+
+document.getElementById("prontuario").innerText="Não disponível"
+
+}
+
+})
 
 </script>
-
-</body>
-</html>
