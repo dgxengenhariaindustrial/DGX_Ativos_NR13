@@ -1,185 +1,309 @@
 <script>
+const csvURL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
 
-const csvURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+const parametros = new URLSearchParams(window.location.search);
+const tagPesquisada = (parametros.get("tag") || "").trim().toUpperCase();
 
-const tag = new URLSearchParams(window.location.search).get("tag");
+/* Leitura correta do CSV, inclusive campos entre aspas */
+function parseCSV(texto) {
+  const linhas = [];
+  let linha = [];
+  let campo = "";
+  let dentroDeAspas = false;
 
-function parseDate(d){
-if(!d) return null
-const p = d.split("/")
-return new Date(p[2],p[1]-1,p[0])
+  for (let i = 0; i < texto.length; i++) {
+    const caractere = texto[i];
+    const proximo = texto[i + 1];
+
+    if (caractere === '"' && dentroDeAspas && proximo === '"') {
+      campo += '"';
+      i++;
+    } else if (caractere === '"') {
+      dentroDeAspas = !dentroDeAspas;
+    } else if (caractere === "," && !dentroDeAspas) {
+      linha.push(campo.trim());
+      campo = "";
+    } else if (
+      (caractere === "\n" || caractere === "\r") &&
+      !dentroDeAspas
+    ) {
+      if (caractere === "\r" && proximo === "\n") {
+        i++;
+      }
+
+      linha.push(campo.trim());
+
+      if (linha.some(valor => valor !== "")) {
+        linhas.push(linha);
+      }
+
+      linha = [];
+      campo = "";
+    } else {
+      campo += caractere;
+    }
+  }
+
+  if (campo !== "" || linha.length > 0) {
+    linha.push(campo.trim());
+    linhas.push(linha);
+  }
+
+  return linhas;
 }
 
-function addMonths(date,months){
-const d = new Date(date)
-d.setMonth(d.getMonth()+months)
-return d
+function parseDate(valor) {
+  if (!valor) return null;
+
+  const partes = valor.trim().split("/");
+
+  if (partes.length !== 3) return null;
+
+  const dia = Number(partes[0]);
+  const mes = Number(partes[1]) - 1;
+  const ano = Number(partes[2]);
+
+  const data = new Date(ano, mes, dia);
+
+  return Number.isNaN(data.getTime()) ? null : data;
 }
 
-function prazoNR13(cat){
-
-const tabela={
-"I":{ext:12,int:36},
-"II":{ext:24,int:48},
-"III":{ext:36,int:72},
-"IV":{ext:48,int:96},
-"V":{ext:60,int:120}
+function addMonths(data, meses) {
+  const novaData = new Date(data);
+  novaData.setMonth(novaData.getMonth() + meses);
+  return novaData;
 }
 
-return tabela[cat]
+function prazoNR13(categoria) {
+  const tabela = {
+    I: { ext: 12, int: 36 },
+    II: { ext: 24, int: 48 },
+    III: { ext: 36, int: 72 },
+    IV: { ext: 48, int: 96 },
+    V: { ext: 60, int: 120 }
+  };
 
+  return tabela[(categoria || "").trim().toUpperCase()];
 }
 
-fetch(csvURL)
-
-.then(r=>r.text())
-
-.then(text=>{
-
-const linhas = text.split("\n").map(l=>l.split(","))
-
-const header = linhas[0].map(h=>h.trim())
-
-const dados = linhas.slice(1)
-
-let equipamento = null
-
-dados.forEach(linha=>{
-
-let obj={}
-
-header.forEach((h,i)=>{
-
-obj[h]=linha[i]
-
-})
-
-if(obj["TAG EQUIPAMENTO"]===tag){
-
-equipamento=obj
-
+function valor(objeto, coluna) {
+  return (objeto[coluna] || "").trim();
 }
 
-})
+function mostrarErro(mensagem) {
+  const elementoEquipamento = document.getElementById("equipamento");
 
-if(!equipamento) return
+  if (elementoEquipamento) {
+    elementoEquipamento.innerText = mensagem;
+  }
 
-/* DADOS */
-
-document.getElementById("equipamento").innerText="Equipamento: "+equipamento["TAG EQUIPAMENTO"]
-
-document.getElementById("categoria").innerText=equipamento["CATEGORIA NR-13"]
-
-document.getElementById("pmta").innerText=equipamento["PMTA (bar)"]+" bar"
-
-document.getElementById("fluido").innerText=equipamento["FLUIDO"]
-
-/* PRAZOS */
-
-const prazo = prazoNR13(equipamento["CATEGORIA NR-13"])
-
-const dataExt = parseDate(equipamento["DATA - VISUAL EXTERNA"])
-
-const dataInt = parseDate(equipamento["DATA - VISUAL INTERNA"])
-
-let proximas=[]
-
-if(dataExt && prazo?.ext) proximas.push(addMonths(dataExt,prazo.ext))
-
-if(dataInt && prazo?.int) proximas.push(addMonths(dataInt,prazo.int))
-
-const proxima = proximas.length ? proximas.sort((a,b)=>a-b)[0] : null
-
-document.getElementById("proxima").innerText = proxima ? proxima.toLocaleDateString("pt-BR") : "-"
-
-/* STATUS */
-
-const hoje=new Date()
-
-if(proxima && proxima<hoje){
-
-document.getElementById("status").innerHTML='<span class="status bad">VENCIDA</span>'
-
-}else{
-
-document.getElementById("status").innerHTML='<span class="status ok">DENTRO DO PRAZO</span>'
-
+  console.error(mensagem);
 }
 
-/* RELATÓRIOS */
+async function carregarEquipamento() {
+  try {
+    if (!tagPesquisada) {
+      mostrarErro("TAG não informada no endereço.");
+      return;
+    }
 
-const relatorios=[
+    const resposta = await fetch(csvURL, {
+      cache: "no-store"
+    });
 
-{
-nome:"Inspeção Visual Externa",
-data:equipamento["DATA - VISUAL EXTERNA"],
-link:equipamento["LINK - VISUAL EXTERNA"]
-},
+    if (!resposta.ok) {
+      throw new Error(
+        `Não foi possível acessar a planilha. Código: ${resposta.status}`
+      );
+    }
 
-{
-nome:"Inspeção Visual Interna",
-data:equipamento["DATA - VISUAL INTERNA"],
-link:equipamento["LINK - VISUAL INTERNA"]
-},
+    const texto = await resposta.text();
+    const linhas = parseCSV(texto);
 
-{
-nome:"Medição de Espessura",
-data:equipamento["DATA - MEDIÇÃO DE ESPESSURA"],
-link:equipamento["LINK - MEDIÇÃO DE ESPESSURA"]
-},
+    if (linhas.length < 2) {
+      throw new Error("A planilha não possui dados disponíveis.");
+    }
 
-{
-nome:"Teste Hidrostático",
-data:equipamento["DATA - TESTE HIDROSTÁTICO"],
-link:equipamento["LINK - TESTE HIDROSTÁTICO"]
+    const cabecalho = linhas[0].map(coluna =>
+      coluna.replace(/^\uFEFF/, "").trim()
+    );
+
+    const equipamentos = linhas.slice(1).map(linha => {
+      const objeto = {};
+
+      cabecalho.forEach((coluna, indice) => {
+        objeto[coluna] = linha[indice] || "";
+      });
+
+      return objeto;
+    });
+
+    const equipamento = equipamentos.find(item => {
+      const tagPlanilha = valor(item, "TAG EQUIPAMENTO").toUpperCase();
+      return tagPlanilha === tagPesquisada;
+    });
+
+    if (!equipamento) {
+      mostrarErro(`Equipamento não encontrado: ${tagPesquisada}`);
+      return;
+    }
+
+    /* DADOS DO EQUIPAMENTO */
+
+    document.getElementById("equipamento").innerText =
+      "Equipamento: " + valor(equipamento, "TAG EQUIPAMENTO");
+
+    document.getElementById("categoria").innerText =
+      valor(equipamento, "CATEGORIA NR-13") || "-";
+
+    document.getElementById("pmta").innerText =
+      valor(equipamento, "PMTA (bar)")
+        ? valor(equipamento, "PMTA (bar)") + " bar"
+        : "-";
+
+    document.getElementById("fluido").innerText =
+      valor(equipamento, "FLUIDO") || "-";
+
+    /* CÁLCULO DA PRÓXIMA INSPEÇÃO */
+
+    const categoria = valor(equipamento, "CATEGORIA NR-13");
+    const prazo = prazoNR13(categoria);
+
+    const dataExterna = parseDate(
+      valor(equipamento, "DATA - VISUAL EXTERNA")
+    );
+
+    const dataInterna = parseDate(
+      valor(equipamento, "DATA - VISUAL INTERNA")
+    );
+
+    const proximasInspecoes = [];
+
+    if (dataExterna && prazo?.ext) {
+      proximasInspecoes.push(addMonths(dataExterna, prazo.ext));
+    }
+
+    if (dataInterna && prazo?.int) {
+      proximasInspecoes.push(addMonths(dataInterna, prazo.int));
+    }
+
+    proximasInspecoes.sort((a, b) => a - b);
+
+    const proximaInspecao =
+      proximasInspecoes.length > 0 ? proximasInspecoes[0] : null;
+
+    document.getElementById("proxima").innerText = proximaInspecao
+      ? proximaInspecao.toLocaleDateString("pt-BR")
+      : "-";
+
+    /* STATUS */
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    if (!proximaInspecao) {
+      document.getElementById("status").innerHTML =
+        '<span class="status bad">SEM DATA</span>';
+    } else if (proximaInspecao < hoje) {
+      document.getElementById("status").innerHTML =
+        '<span class="status bad">VENCIDA</span>';
+    } else {
+      document.getElementById("status").innerHTML =
+        '<span class="status ok">DENTRO DO PRAZO</span>';
+    }
+
+    /* RELATÓRIOS */
+
+    const relatorios = [
+      {
+        nome: "Inspeção Visual Externa",
+        data: valor(equipamento, "DATA - VISUAL EXTERNA"),
+        link: valor(equipamento, "LINK - VISUAL EXTERNA")
+      },
+      {
+        nome: "Inspeção Visual Interna",
+        data: valor(equipamento, "DATA - VISUAL INTERNA"),
+        link: valor(equipamento, "LINK - VISUAL INTERNA")
+      },
+      {
+        nome: "Medição de Espessura",
+        data: valor(equipamento, "DATA - MEDIÇÃO DE ESPESSURA"),
+        link: valor(equipamento, "LINK - MEDIÇÃO DE ESPESSURA")
+      },
+      {
+        nome: "Teste Hidrostático",
+        data: valor(equipamento, "DATA - TESTE HIDROSTÁTICO"),
+        link: valor(equipamento, "LINK - TESTE HIDROSTÁTICO")
+      }
+    ];
+
+    let htmlRelatorios = "";
+
+    relatorios.forEach(relatorio => {
+      if (relatorio.link) {
+        htmlRelatorios += `
+          <tr>
+            <td>${relatorio.nome}</td>
+            <td>${relatorio.data || "-"}</td>
+            <td>
+              <a
+                class="button"
+                href="${relatorio.link}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visualizar
+              </a>
+            </td>
+          </tr>
+        `;
+      }
+    });
+
+    document.getElementById("relatorios").innerHTML =
+      htmlRelatorios ||
+      '<tr><td colspan="3">Nenhum relatório disponível.</td></tr>';
+
+    /* ART */
+
+    const linkART = valor(equipamento, "LINK - ART");
+
+    document.getElementById("art").innerHTML = linkART
+      ? `
+        <a
+          class="button"
+          href="${linkART}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Visualizar ART
+        </a>
+      `
+      : "Não disponível";
+
+    /* PRONTUÁRIO */
+
+    const linkProntuario = valor(equipamento, "LINK - PRONTUÁRIO");
+
+    document.getElementById("prontuario").innerHTML = linkProntuario
+      ? `
+        <a
+          class="button"
+          href="${linkProntuario}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Visualizar Prontuário
+        </a>
+      `
+      : "Não disponível";
+
+  } catch (erro) {
+    mostrarErro("Erro ao carregar os dados do equipamento.");
+    console.error(erro);
+  }
 }
 
-]
-
-let html=""
-
-relatorios.forEach(r=>{
-
-if(r.link){
-
-html+=`
-<tr>
-<td>${r.nome}</td>
-<td>${r.data || "-"}</td>
-<td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
-</tr>
-`
-
-}
-
-})
-
-document.getElementById("relatorios").innerHTML=html
-
-/* ART */
-
-if(equipamento["LINK - ART"]){
-
-document.getElementById("art").innerHTML=`<a class="button" href="${equipamento["LINK - ART"]}" target="_blank">Visualizar ART</a>`
-
-}else{
-
-document.getElementById("art").innerText="Não disponível"
-
-}
-
-/* PRONTUÁRIO */
-
-if(equipamento["LINK - PRONTUÁRIO"]){
-
-document.getElementById("prontuario").innerHTML=`<a class="button" href="${equipamento["LINK - PRONTUÁRIO"]}" target="_blank">Visualizar Prontuário</a>`
-
-}else{
-
-document.getElementById("prontuario").innerText="Não disponível"
-
-}
-
-})
-
+carregarEquipamento();
 </script>
