@@ -1,386 +1,1205 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
+  <meta charset="UTF-8">
 
-<meta charset="UTF-8">
-<title>DGX | Engenharia Industrial</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<style>
+  <title>DGX | Gestão de Ativos NR-13</title>
 
-body{
-font-family:Arial;
-background:#f5f6fa;
-margin:0;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-header{
-background:white;
-padding:15px 30px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6fa;
+      color: #1f2937;
+    }
 
-h1{
-color:#1f3c88;
-font-size:22px;
-}
+    header {
+      width: 100%;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
 
-.card{
-background:white;
-padding:25px;
-border-radius:8px;
-margin-bottom:20px;
-box-shadow:0 2px 5px rgba(0,0,0,0.05);
-}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-.status{
-padding:8px 12px;
-border-radius:6px;
-font-weight:bold;
-display:inline-block;
-}
+    .brand img {
+      width: 55px;
+      height: auto;
+      object-fit: contain;
+    }
 
-.status.ok{
-background:#d4edda;
-color:#155724;
-}
+    .brand-title {
+      margin: 0;
+      color: #173b76;
+      font-size: 23px;
+      font-weight: 700;
+    }
 
-.status.bad{
-background:#f8d7da;
-color:#721c24;
-}
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-}
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 22px;
+    }
 
-th{
-background:#e5e5e5;
-padding:10px;
-text-align:left;
-}
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 26px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
 
-td{
-padding:10px;
-border-bottom:1px solid #ddd;
-}
+    .equipment-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 30px;
+      align-items: center;
+    }
 
-.button{
-background:#2c4c97;
-color:white;
-padding:6px 12px;
-border-radius:6px;
-text-decoration:none;
-font-size:14px;
-}
+    .equipment-title {
+      margin: 0 0 22px;
+      font-size: 25px;
+      color: #111827;
+    }
 
-.right{
-text-align:right;
-}
+    .equipment-info p {
+      margin: 12px 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
 
-.bigDate{
-font-size:28px;
-font-weight:bold;
-color:#1f3c88;
-}
+    .label {
+      font-weight: 700;
+    }
 
-</style>
+    .inspection-status {
+      text-align: right;
+    }
 
+    .status {
+      display: inline-block;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .status-ok {
+      color: #176534;
+      background: #d8f3df;
+    }
+
+    .status-warning {
+      color: #854d0e;
+      background: #fef3c7;
+    }
+
+    .status-expired {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .status-no-date {
+      color: #4b5563;
+      background: #e5e7eb;
+    }
+
+    .next-label {
+      margin: 17px 0 8px;
+      font-size: 15px;
+      color: #374151;
+    }
+
+    .next-date {
+      margin: 0;
+      font-size: 27px;
+      font-weight: 700;
+      color: #173b76;
+    }
+
+    .section-title {
+      margin: 0 0 20px;
+      font-size: 22px;
+      color: #111827;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th {
+      padding: 12px;
+      background: #e5e5e5;
+      color: #111827;
+      text-align: left;
+      font-size: 15px;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 15px;
+      vertical-align: middle;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 9px 16px;
+      border: none;
+      border-radius: 5px;
+      background: #214a9a;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background: #173b76;
+    }
+
+    .button-secondary {
+      background: #ffffff;
+      color: #111827;
+      border: 1px solid #9ca3af;
+    }
+
+    .button-secondary:hover {
+      background: #f3f4f6;
+    }
+
+    .button-danger {
+      background: #c83c3c;
+    }
+
+    .button-danger:hover {
+      background: #a92d2d;
+    }
+
+    .empty-message {
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    .loading {
+      padding: 60px 20px;
+      text-align: center;
+      color: #4b5563;
+      font-size: 18px;
+    }
+
+    .error-box {
+      background: #fff1f2;
+      color: #991b1b;
+      border: 1px solid #fecdd3;
+      border-radius: 8px;
+      padding: 18px;
+      line-height: 1.5;
+    }
+
+    footer {
+      padding: 10px 20px 30px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      header {
+        box-shadow: none;
+      }
+
+      .header-actions {
+        display: none;
+      }
+
+      .container {
+        max-width: none;
+        padding: 10px;
+      }
+
+      .card {
+        box-shadow: none;
+        border: 1px solid #d1d5db;
+        break-inside: avoid;
+      }
+
+      .button {
+        color: #111827;
+        background: none;
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .header-content {
+        padding: 14px 16px;
+      }
+
+      .brand-title {
+        font-size: 18px;
+      }
+
+      .brand img {
+        width: 45px;
+      }
+
+      .header-actions {
+        gap: 5px;
+      }
+
+      .header-actions .button {
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+
+      .container {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .equipment-card {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .equipment-title {
+        font-size: 21px;
+      }
+
+      .inspection-status {
+        text-align: left;
+      }
+
+      .next-date {
+        font-size: 25px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-<header>
-
-<div style="display:flex;align-items:center;gap:15px">
-
-<img src="DGX - ENGENHARIA.png" height="40">
-
-<h1>DGX | Engenharia Industrial</h1>
-
-</div>
-
-<div>
-
-<button onclick="window.print()">Gerar PDF</button>
-<button onclick="window.close()">Sair</button>
-
-</div>
-
-</header>
-
-<div class="container">
-
-<div class="card">
-
-<h2 id="equipamento"></h2>
-
-<p><b>Categoria NR-13:</b> <span id="categoria"></span></p>
-<p><b>PMTA:</b> <span id="pmta"></span></p>
-<p><b>Fluido:</b> <span id="fluido"></span></p>
-
-<div class="right">
-
-<div id="status"></div>
-
-<p>Próxima inspeção</p>
-
-<div class="bigDate" id="proxima"></div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h3>RELATÓRIOS</h3>
-
-<table>
-
-<tr>
-
-<th>Tipo</th>
-<th>Última inspeção</th>
-<th>Visualizar</th>
-
-</tr>
-
-<tbody id="relatorios"></tbody>
-
-</table>
-
-</div>
-
-<div class="card">
-
-<h3>ART</h3>
-
-<div id="art"></div>
-
-</div>
-
-<div class="card">
-
-<h3>PRONTUÁRIO NR-13</h3>
-
-<div id="prontuario"></div>
-
-</div>
-
-</div>
-
-<script>
-
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
-
-const tag = new URLSearchParams(window.location.search).get("tag");
-
-function parseDate(d){
-
-if(!d)return null;
-
-const parts=d.split("/");
-
-return new Date(parts[2],parts[1]-1,parts[0]);
-
-}
-
-function addMonths(date,months){
-
-const d=new Date(date);
-
-d.setMonth(d.getMonth()+months);
-
-return d;
-
-}
-
-function formatDate(date){
-
-return date.toLocaleDateString("pt-BR");
-
-}
-
-function getPrazo(cat,tipo){
-
-const tabela={
-
-"I":{ext:12,int:36},
-
-"II":{ext:24,int:48},
-
-"III":{ext:36,int:72},
-
-"IV":{ext:48,int:96},
-
-"V":{ext:60,int:120}
-
-};
-
-return tabela[cat]?.[tipo];
-
-}
-
-fetch(urlCSV)
-
-.then(r=>r.text())
-
-.then(text=>{
-
-const linhas=text.split("\n").map(l=>l.split(","));
-
-const header=linhas[0];
-
-const dados=linhas.slice(1);
-
-const idx=(name)=>header.indexOf(name);
-
-const equipamento=dados.find(l=>l[idx("TAG EQUIPAMENTO")]===tag);
-
-if(!equipamento)return;
-
-document.getElementById("equipamento").innerText="Equipamento: "+equipamento[idx("TAG EQUIPAMENTO")];
-
-document.getElementById("categoria").innerText=equipamento[idx("CATEGORIA NR-13")];
-
-document.getElementById("pmta").innerText=equipamento[idx("PMTA (bar)")]+" bar";
-
-document.getElementById("fluido").innerText=equipamento[idx("FLUIDO")];
-
-const categoria=equipamento[idx("CATEGORIA NR-13")];
-
-const dataExt=parseDate(equipamento[idx("DATA - VISUAL EXTERNA")]);
-
-const dataInt=parseDate(equipamento[idx("DATA - VISUAL INTERNA")]);
-
-let proximas=[];
-
-if(dataExt){
-
-const prazo=getPrazo(categoria,"ext");
-
-proximas.push(addMonths(dataExt,prazo));
-
-}
-
-if(dataInt){
-
-const prazo=getPrazo(categoria,"int");
-
-proximas.push(addMonths(dataInt,prazo));
-
-}
-
-const proxima=proximas.sort((a,b)=>a-b)[0];
-
-document.getElementById("proxima").innerText=formatDate(proxima);
-
-const hoje=new Date();
-
-const statusEl=document.getElementById("status");
-
-if(proxima<hoje){
-
-statusEl.innerHTML='<span class="status bad">VENCIDA</span>';
-
-}else{
-
-statusEl.innerHTML='<span class="status ok">DENTRO DO PRAZO</span>';
-
-}
-
-const relatorios=[
-
-{
-
-nome:"Inspeção Visual Externa",
-
-data:equipamento[idx("DATA - VISUAL EXTERNA")],
-
-link:equipamento[idx("LINK - VISUAL EXTERNA")]
-
-},
-
-{
-
-nome:"Inspeção Visual Interna",
-
-data:equipamento[idx("DATA - VISUAL INTERNA")],
-
-link:equipamento[idx("LINK - VISUAL INTERNA")]
-
-},
-
-{
-
-nome:"Medição de Espessura",
-
-data:equipamento[idx("DATA - MEDIÇÃO DE ESPESSURA")],
-
-link:equipamento[idx("LINK - MEDIÇÃO DE ESPESSURA")]
-
-},
-
-{
-
-nome:"Teste Hidrostático",
-
-data:equipamento[idx("DATA - TESTE HIDROSTÁTICO")],
-
-link:equipamento[idx("LINK - TESTE HIDROSTÁTICO")]
-
-}
-
-];
-
-let html="";
-
-relatorios.forEach(r=>{
-
-if(r.link){
-
-html+=`<tr>
-
-<td>${r.nome}</td>
-
-<td>${r.data||"-"}</td>
-
-<td><a class="button" href="${r.link}" target="_blank">Visualizar</a></td>
-
-</tr>`;
-
-}
-
-});
-
-document.getElementById("relatorios").innerHTML=html;
-
-const art=equipamento[idx("LINK - ART")];
-
-document.getElementById("art").innerHTML=
-
-art?`<a class="button" href="${art}" target="_blank">Visualizar ART</a>`:"Não disponível";
-
-const pront=equipamento[idx("LINK - PRONTUÁRIO")];
-
-document.getElementById("prontuario").innerHTML=
-
-pront?`<a class="button" href="${pront}" target="_blank">Visualizar Prontuário</a>`:"Não disponível";
-
-});
-
-</script>
-
+  <header>
+    <div class="header-content">
+      <div class="brand">
+        <img
+          src="DGX%20-%20ENGENHARIA.png"
+          alt="Logo DGX Engenharia Industrial"
+        >
+
+        <h1 class="brand-title">
+          DGX | Engenharia Industrial
+        </h1>
+      </div>
+
+      <div class="header-actions">
+        <button
+          type="button"
+          class="button button-secondary"
+          onclick="window.print()"
+        >
+          Gerar PDF
+        </button>
+
+        <button
+          type="button"
+          class="button button-danger"
+          onclick="window.close()"
+        >
+          Sair
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="loading" class="loading">
+      Carregando informações do equipamento...
+    </div>
+
+    <div id="error-container"></div>
+
+    <div id="page-content" hidden>
+      <section class="card equipment-card">
+        <div class="equipment-info">
+          <h2
+            id="equipment-title"
+            class="equipment-title"
+          >
+            Equipamento:
+          </h2>
+
+          <p>
+            <span class="label">Tipo:</span>
+            <span id="equipment-type">-</span>
+          </p>
+
+          <p>
+            <span class="label">Cliente:</span>
+            <span id="client">-</span>
+          </p>
+
+          <p>
+            <span class="label">Categoria NR-13:</span>
+            <span id="category">-</span>
+          </p>
+
+          <p>
+            <span class="label">PMTA:</span>
+            <span id="pmta">-</span>
+          </p>
+
+          <p>
+            <span class="label">Fluido:</span>
+            <span id="fluid">-</span>
+          </p>
+        </div>
+
+        <div class="inspection-status">
+          <div id="status"></div>
+
+          <p class="next-label">
+            Próxima inspeção
+          </p>
+
+          <p id="next-inspection" class="next-date">
+            -
+          </p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">
+          RELATÓRIOS
+        </h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Última inspeção</th>
+                <th>Visualizar</th>
+              </tr>
+            </thead>
+
+            <tbody id="reports"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">
+          ART
+        </h2>
+
+        <div id="art">
+          <span class="empty-message">
+            Não disponível.
+          </span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-title">
+          PRONTUÁRIO NR-13
+        </h2>
+
+        <div id="record">
+          <span class="empty-message">
+            Não disponível.
+          </span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    Página consultada em
+    <span id="generated-at"></span>
+  </footer>
+
+  <script>
+    /*
+      Planilha publicada em CSV.
+
+      Esta URL é diferente do link normal de edição da planilha.
+      Ela aponta para a publicação usada pelo GitHub Pages.
+    */
+    const CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3cZQotIF9E8GIug0GzH75RM5WGeS1Ah3l-d56FaDpq1ZV4To3SxDRwOaBQZTRSDLK6WAgjRdrueh4/pub?gid=0&single=true&output=csv";
+
+    const parameters = new URLSearchParams(window.location.search);
+
+    const searchedTag = normalizeText(
+      parameters.get("tag") || ""
+    ).toUpperCase();
+
+    /*
+      Faz a leitura correta de CSV.
+
+      Suporta:
+      - números com vírgula: 6,0;
+      - campos entre aspas;
+      - URLs;
+      - quebras de linha;
+      - aspas duplicadas.
+    */
+    function parseCSV(text) {
+      const rows = [];
+
+      let row = [];
+      let field = "";
+      let insideQuotes = false;
+
+      for (let index = 0; index < text.length; index++) {
+        const character = text[index];
+        const nextCharacter = text[index + 1];
+
+        if (
+          character === '"' &&
+          insideQuotes &&
+          nextCharacter === '"'
+        ) {
+          field += '"';
+          index++;
+          continue;
+        }
+
+        if (character === '"') {
+          insideQuotes = !insideQuotes;
+          continue;
+        }
+
+        if (character === "," && !insideQuotes) {
+          row.push(field);
+          field = "";
+          continue;
+        }
+
+        if (
+          (character === "\n" || character === "\r") &&
+          !insideQuotes
+        ) {
+          if (
+            character === "\r" &&
+            nextCharacter === "\n"
+          ) {
+            index++;
+          }
+
+          row.push(field);
+
+          if (row.some(value => value.trim() !== "")) {
+            rows.push(row);
+          }
+
+          row = [];
+          field = "";
+          continue;
+        }
+
+        field += character;
+      }
+
+      if (field !== "" || row.length > 0) {
+        row.push(field);
+
+        if (row.some(value => value.trim() !== "")) {
+          rows.push(row);
+        }
+      }
+
+      return rows;
+    }
+
+    function normalizeText(value) {
+      return String(value ?? "")
+        .replace(/^\uFEFF/, "")
+        .trim();
+    }
+
+    function normalizeHeader(value) {
+      return normalizeText(value)
+        .replace(/\s+/g, " ")
+        .toUpperCase();
+    }
+
+    function getValue(equipment, columnName) {
+      return normalizeText(
+        equipment[normalizeHeader(columnName)]
+      );
+    }
+
+    function parseBrazilianDate(value) {
+      const cleanValue = normalizeText(value);
+
+      if (!cleanValue) {
+        return null;
+      }
+
+      /*
+        Formato principal:
+        dd/mm/aaaa
+      */
+      const match = cleanValue.match(
+        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+      );
+
+      if (match) {
+        const day = Number(match[1]);
+        const month = Number(match[2]) - 1;
+        const year = Number(match[3]);
+
+        const date = new Date(
+          year,
+          month,
+          day,
+          12,
+          0,
+          0
+        );
+
+        if (
+          date.getFullYear() === year &&
+          date.getMonth() === month &&
+          date.getDate() === day
+        ) {
+          return date;
+        }
+      }
+
+      /*
+        Formato alternativo:
+        aaaa-mm-dd
+      */
+      const isoMatch = cleanValue.match(
+        /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+      );
+
+      if (isoMatch) {
+        const year = Number(isoMatch[1]);
+        const month = Number(isoMatch[2]) - 1;
+        const day = Number(isoMatch[3]);
+
+        return new Date(
+          year,
+          month,
+          day,
+          12,
+          0,
+          0
+        );
+      }
+
+      return null;
+    }
+
+    function formatBrazilianDate(date) {
+      if (
+        !date ||
+        Number.isNaN(date.getTime())
+      ) {
+        return "-";
+      }
+
+      return date.toLocaleDateString("pt-BR");
+    }
+
+    function addMonths(date, months) {
+      const result = new Date(date);
+
+      result.setMonth(
+        result.getMonth() + months
+      );
+
+      return result;
+    }
+
+    /*
+      Prazos utilizados apenas para demonstração
+      da página.
+
+      A data mais próxima entre inspeção externa
+      e interna é apresentada como próxima inspeção.
+    */
+    function getNR13Periods(category) {
+      const periods = {
+        "I": {
+          external: 12,
+          internal: 36
+        },
+        "II": {
+          external: 24,
+          internal: 48
+        },
+        "III": {
+          external: 36,
+          internal: 72
+        },
+        "IV": {
+          external: 48,
+          internal: 96
+        },
+        "V": {
+          external: 60,
+          internal: 120
+        }
+      };
+
+      return periods[
+        normalizeText(category).toUpperCase()
+      ] || null;
+    }
+
+    function calculateNextInspection(equipment) {
+      /*
+        Caso a planilha receba futuramente uma coluna
+        chamada DATA - PRÓXIMA INSPEÇÃO, ela terá
+        prioridade sobre o cálculo automático.
+      */
+      const registeredNextInspection =
+        parseBrazilianDate(
+          getValue(
+            equipment,
+            "DATA - PRÓXIMA INSPEÇÃO"
+          )
+        );
+
+      if (registeredNextInspection) {
+        return registeredNextInspection;
+      }
+
+      const category = getValue(
+        equipment,
+        "CATEGORIA NR-13"
+      );
+
+      const periods = getNR13Periods(category);
+
+      if (!periods) {
+        return null;
+      }
+
+      const externalInspectionDate =
+        parseBrazilianDate(
+          getValue(
+            equipment,
+            "DATA - VISUAL EXTERNA"
+          )
+        );
+
+      const internalInspectionDate =
+        parseBrazilianDate(
+          getValue(
+            equipment,
+            "DATA - VISUAL INTERNA"
+          )
+        );
+
+      const nextDates = [];
+
+      if (externalInspectionDate) {
+        nextDates.push(
+          addMonths(
+            externalInspectionDate,
+            periods.external
+          )
+        );
+      }
+
+      if (internalInspectionDate) {
+        nextDates.push(
+          addMonths(
+            internalInspectionDate,
+            periods.internal
+          )
+        );
+      }
+
+      if (nextDates.length === 0) {
+        return null;
+      }
+
+      nextDates.sort(
+        (firstDate, secondDate) =>
+          firstDate - secondDate
+      );
+
+      return nextDates[0];
+    }
+
+    function formatPMTA(value) {
+      const cleanValue = normalizeText(value);
+
+      if (!cleanValue) {
+        return "-";
+      }
+
+      /*
+        Preserva o padrão brasileiro da planilha:
+        6,0 bar
+      */
+      return cleanValue + " bar";
+    }
+
+    function isValidLink(value) {
+      const cleanValue = normalizeText(value);
+
+      return (
+        cleanValue.startsWith("https://") ||
+        cleanValue.startsWith("http://")
+      );
+    }
+
+    function createDocumentButton(
+      link,
+      label
+    ) {
+      if (!isValidLink(link)) {
+        return `
+          <span class="empty-message">
+            Não disponível.
+          </span>
+        `;
+      }
+
+      return `
+        <a
+          class="button"
+          href="${escapeAttribute(link)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ${escapeHTML(label)}
+        </a>
+      `;
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHTML(value);
+    }
+
+    function renderStatus(nextInspection) {
+      const statusContainer =
+        document.getElementById("status");
+
+      if (!nextInspection) {
+        statusContainer.innerHTML = `
+          <span class="status status-no-date">
+            SEM DATA DEFINIDA
+          </span>
+        `;
+
+        return;
+      }
+
+      const today = new Date();
+
+      today.setHours(0, 0, 0, 0);
+
+      const comparisonDate =
+        new Date(nextInspection);
+
+      comparisonDate.setHours(0, 0, 0, 0);
+
+      const differenceInDays = Math.ceil(
+        (
+          comparisonDate.getTime() -
+          today.getTime()
+        ) /
+        (1000 * 60 * 60 * 24)
+      );
+
+      if (differenceInDays < 0) {
+        statusContainer.innerHTML = `
+          <span class="status status-expired">
+            INSPEÇÃO VENCIDA
+          </span>
+        `;
+
+        return;
+      }
+
+      if (differenceInDays <= 90) {
+        statusContainer.innerHTML = `
+          <span class="status status-warning">
+            PRÓXIMA DO VENCIMENTO
+          </span>
+        `;
+
+        return;
+      }
+
+      statusContainer.innerHTML = `
+        <span class="status status-ok">
+          DENTRO DO PRAZO
+        </span>
+      `;
+    }
+
+    function renderReports(equipment) {
+      const reports = [
+        {
+          name: "Inspeção Visual Externa",
+          dateColumn: "DATA - VISUAL EXTERNA",
+          linkColumn: "LINK - VISUAL EXTERNA"
+        },
+        {
+          name: "Inspeção Visual Interna",
+          dateColumn: "DATA - VISUAL INTERNA",
+          linkColumn: "LINK - VISUAL INTERNA"
+        },
+        {
+          name: "Medição de Espessura",
+          dateColumn: "DATA - MEDIÇÃO DE ESPESSURA",
+          linkColumn: "LINK - MEDIÇÃO DE ESPESSURA"
+        },
+        {
+          name: "Teste Hidrostático",
+          dateColumn: "DATA - TESTE HIDROSTÁTICO",
+          linkColumn: "LINK - TESTE HIDROSTÁTICO"
+        }
+      ];
+
+      const availableReports = reports.filter(report => {
+        const link = getValue(
+          equipment,
+          report.linkColumn
+        );
+
+        return isValidLink(link);
+      });
+
+      const reportsBody =
+        document.getElementById("reports");
+
+      if (availableReports.length === 0) {
+        reportsBody.innerHTML = `
+          <tr>
+            <td colspan="3">
+              <span class="empty-message">
+                Nenhum relatório disponível.
+              </span>
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+      reportsBody.innerHTML =
+        availableReports.map(report => {
+          const date = getValue(
+            equipment,
+            report.dateColumn
+          );
+
+          const link = getValue(
+            equipment,
+            report.linkColumn
+          );
+
+          return `
+            <tr>
+              <td>
+                ${escapeHTML(report.name)}
+              </td>
+
+              <td>
+                ${escapeHTML(date || "-")}
+              </td>
+
+              <td>
+                <a
+                  class="button"
+                  href="${escapeAttribute(link)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Visualizar
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join("");
+    }
+
+    function renderEquipment(equipment) {
+      const tag = getValue(
+        equipment,
+        "TAG EQUIPAMENTO"
+      );
+
+      const client = getValue(
+        equipment,
+        "CLIENTE"
+      );
+
+      const type = getValue(
+        equipment,
+        "TIPO"
+      );
+
+      const category = getValue(
+        equipment,
+        "CATEGORIA NR-13"
+      );
+
+      const pmta = getValue(
+        equipment,
+        "PMTA (bar)"
+      );
+
+      const fluid = getValue(
+        equipment,
+        "FLUIDO"
+      );
+
+      document.getElementById(
+        "equipment-title"
+      ).textContent =
+        "Equipamento: " + (tag || "-");
+
+      document.getElementById(
+        "client"
+      ).textContent =
+        client || "-";
+
+      document.getElementById(
+        "equipment-type"
+      ).textContent =
+        type || "-";
+
+      document.getElementById(
+        "category"
+      ).textContent =
+        category || "-";
+
+      document.getElementById(
+        "pmta"
+      ).textContent =
+        formatPMTA(pmta);
+
+      document.getElementById(
+        "fluid"
+      ).textContent =
+        fluid || "-";
+
+      const nextInspection =
+        calculateNextInspection(equipment);
+
+      document.getElementById(
+        "next-inspection"
+      ).textContent =
+        formatBrazilianDate(nextInspection);
+
+      renderStatus(nextInspection);
+      renderReports(equipment);
+
+      const artLink = getValue(
+        equipment,
+        "LINK - ART"
+      );
+
+      const recordLink = getValue(
+        equipment,
+        "LINK - PRONTUÁRIO"
+      );
+
+      document.getElementById(
+        "art"
+      ).innerHTML =
+        createDocumentButton(
+          artLink,
+          "Visualizar ART"
+        );
+
+      document.getElementById(
+        "record"
+      ).innerHTML =
+        createDocumentButton(
+          recordLink,
+          "Visualizar Prontuário"
+        );
+    }
+
+    function showError(message) {
+      document.getElementById(
+        "loading"
+      ).hidden = true;
+
+      document.getElementById(
+        "page-content"
+      ).hidden = true;
+
+      document.getElementById(
+        "error-container"
+      ).innerHTML = `
+        <div class="error-box">
+          <strong>
+            Não foi possível carregar o equipamento.
+          </strong>
+
+          <br><br>
+
+          ${escapeHTML(message)}
+        </div>
+      `;
+    }
+
+    async function loadEquipment() {
+      try {
+        if (!searchedTag) {
+          showError(
+            "A TAG não foi informada no endereço do QR Code."
+          );
+
+          return;
+        }
+
+        const response = await fetch(
+          CSV_URL + "&t=" + Date.now(),
+          {
+            method: "GET",
+            cache: "no-store"
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "A planilha não pôde ser acessada. Código HTTP: " +
+            response.status
+          );
+        }
+
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
+
+        if (rows.length < 2) {
+          throw new Error(
+            "A planilha publicada está vazia ou não possui registros."
+          );
+        }
+
+        const headers = rows[0].map(
+          normalizeHeader
+        );
+
+        const equipmentList =
+          rows.slice(1).map(row => {
+            const equipment = {};
+
+            headers.forEach(
+              (header, columnIndex) => {
+                equipment[header] =
+                  normalizeText(
+                    row[columnIndex] || ""
+                  );
+              }
+            );
+
+            return equipment;
+          });
+
+        const equipment =
+          equipmentList.find(item => {
+            const itemTag = getValue(
+              item,
+              "TAG EQUIPAMENTO"
+            ).toUpperCase();
+
+            return itemTag === searchedTag;
+          });
+
+        if (!equipment) {
+          throw new Error(
+            "Nenhum equipamento foi encontrado para a TAG: " +
+            searchedTag
+          );
+        }
+
+        renderEquipment(equipment);
+
+        document.getElementById(
+          "loading"
+        ).hidden = true;
+
+        document.getElementById(
+          "page-content"
+        ).hidden = false;
+
+      } catch (error) {
+        console.error(error);
+
+        showError(
+          error.message ||
+          "Ocorreu um erro inesperado."
+        );
+      }
+    }
+
+    document.getElementById(
+      "generated-at"
+    ).textContent =
+      new Date().toLocaleString("pt-BR");
+
+    loadEquipment();
+  </script>
 </body>
 </html>
